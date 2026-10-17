@@ -47,6 +47,7 @@ features/{{PREFIX}}-<n>  ──PR──▶  main  ──deploy:dev──▶  dev
                                            └──ff──▶  env/prod  deploys {{domain}}
 {{/qa}}{{^qa}}                                 ──ff──▶  env/prod  deploys {{domain}}
 {{/qa}}
+
 hotfix/{{PREFIX}}-<n>  ──PR──▶  env/prod  ──merge──▶  main
 ```
 

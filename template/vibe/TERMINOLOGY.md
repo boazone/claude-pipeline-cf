@@ -51,7 +51,8 @@ of it. Keeping the two apart is the reason the technical name exists.
 One Worker serves every app on one origin, each under its own path, beside `/api/*`.
 <!-- {{/multiapp}} -->
 <!-- {{^multiapp}} -->
-One app, at `/`, and the API at `/api/*`.
+One app — the **{{app_first}} app** — at `/`, and the API at `/api/*`. A second app, when one comes,
+takes a path of its own, `/<app>/*`, beside it.
 <!-- {{/multiapp}} -->
 
 ---
