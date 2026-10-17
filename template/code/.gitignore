@@ -1,0 +1,13 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.wrangler/
+.dev.vars
+.dev-account.env
+certs/
+# Local-only Vite flags.
+.env.local
+# `dev.mjs preview` writes it for a story with a migration.
+apps/api/wrangler.preview.jsonc
+# The evaluator's and `/open --bug`'s own specs, never committed.
+apps/web/browser/eval/

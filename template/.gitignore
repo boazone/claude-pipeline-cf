@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.wrangler/
+certs/
+.dev.vars
+# The dev account's token and the Access service token, in the root checkout.
+.dev-account.env
+*.tsbuildinfo
+dist-types/
+
+# A story worktree's own server, written by the pipeline for the built-in browser.
+.claude/launch.json
+
+# Playwright's results and traces, one folder per failed test.
+code/apps/web/browser/results/
+
+# The cleanup queue: commands a session could not run, worked through daily.
+.claude/cleanup-queue.txt

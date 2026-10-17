@@ -1,0 +1,11 @@
+{
+  // The api tests, a project of their own so `cloudflare:test` is typed here and nowhere in
+  // `src`, where the module does not exist outside the test pool.
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["@cloudflare/workers-types", "@cloudflare/vitest-plugin/types"],
+    "outDir": "../dist/test"
+  },
+  "include": ["."],
+  "references": [{ "path": ".." }]
+}

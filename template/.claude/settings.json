@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm --prefix code run deploy:dev -w @{{name}}/api)",
+      "Bash(npm --prefix code run preview:dev -w @{{name}}/api -- *)",
+      "Bash(npm run cleanup --prefix code)",
+      "Bash(gh pr create *)",
+      "Bash(gh pr merge *)",
+      "PowerShell(npm --prefix code run deploy:dev -w @{{name}}/api)",
+      "PowerShell(npm --prefix code run preview:dev -w @{{name}}/api -- *)",
+      "PowerShell(gh pr create *)",
+      "PowerShell(gh pr merge *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell|mcp__terminal__run_in_terminal|Write|Edit|MultiEdit",
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.mjs\"" }]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/format.mjs\"" }]
+      }
+    ]
+  }
+}

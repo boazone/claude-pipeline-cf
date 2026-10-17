@@ -1,0 +1,14 @@
+{
+  "name": "demo",
+  "PREFIX": "DMO",
+  "marketing": "Demoly",
+  "purpose": "a demo project that proves the template renders, installs and passes verify.",
+  "description": "Nothing real: the dry run of `/start` renders it into a scratch folder and runs the gates.",
+  "domain": "demoly.app",
+  "root": "C:/dev/personal/demo",
+  "email": "someone@example.com",
+  "gh_owner": "someone",
+  "dev_subdomain": "demo-dev",
+  "apps": ["admin", "shop"],
+  "flags": { "qa": true, "r2": true, "ai": true, "google": true, "routines": true, "i18n": true }
+}

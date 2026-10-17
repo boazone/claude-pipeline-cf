@@ -83,18 +83,26 @@ Done means a hello page answers on local, dev and production (and QA when chosen
 1. A generator, not a template to clone: `/start` runs here and creates `<root>` as its own
    repository.
 2. The stack is FND's: Workers, D1, Hono, Vite + React, drizzle, Biome, Vitest, Playwright. R2,
-   Durable Objects, AI Gateway and OAuth sign-in are `/start` toggles; off means a later story's
-   decision card adds it.
+   AI Gateway and Google sign-in are `/start` toggles: on, `/start` creates the resources and the
+   bindings; the code that uses them is a later story's, behind its decision card. Durable Objects
+   need no resource, so the first story that needs one adds it.
 3. The skills are copied into the project, not shared as a plugin — the repository is the only
    state, and each project's skills evolve with it, as FND's did.
 4. The pipeline in the new project covers planning and design before the first story (the user's
    vision, 2026-10-17).
 5. FND's product stays out: its three apps, the simulator, the evaluation harness.
 6. `/start` is resumable: its state is `vibe/dev/SETUP.md` in the new repository, never memory.
-7. The `/start` toggles: QA, R2, Durable Objects, AI Gateway, OAuth sign-in, cloud routines,
-   several languages and directions, several apps.
+7. The `/start` toggles: QA, R2, AI Gateway, Google sign-in, cloud routines, several languages
+   and directions; several apps is the app list. `scripts/render.mjs` applies them to `template/`
+   (`{{key}}`, `{{#flag}}…{{/flag}}`, `{{^flag}}`, `{{#apps}}`, `__app__` in a path), then
+   `npm install` and `npm run format` in the new project before its first commit.
 8. Windows first, as FND; paths are placeholders.
-9. P1 and P2 work as `/open` does: the documents and the user's answers close the gaps, one
+9. The scaffold is a hello page per app, `/api/health`, and the system log (table, `POST
+   /api/system-log`, the browser's uncaught errors) — what the pipeline's checks and the bug sweep
+   need, nothing of a product.
+10. The root folder's path stays short — Windows refuses paths over 260 characters and local D1
+    reports it as an opaque *internal error*.
+11. P1 and P2 work as `/open` does: the documents and the user's answers close the gaps, one
    question at a time; the design phase writes documents, and wireframes are artifacts only when
    the user asks, registered in `RESOURCES.md`.
 

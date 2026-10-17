@@ -1,0 +1,32 @@
+{
+  "name": "{{name}}",
+  "private": true,
+  "type": "module",
+  "workspaces": ["apps/*", "tools/*"],
+  "scripts": {
+    "dev": "concurrently -k -n bundle,worker -c cyan,magenta \"npm:dev:bundle\" \"npm:dev:worker\"",
+    "dev:bundle": "npm run build:watch -w @{{name}}/web",
+    "dev:worker": "npm run dev -w @{{name}}/api",
+    "build": "npm run build -w @{{name}}/web",
+    "typecheck": "tsc -b",
+    "lint": "biome check --diagnostic-level=error .",
+    "format": "biome format --write .",
+    "test": "vitest run --coverage",
+    "verify": "node verify.mjs",
+    "decisions": "node tools/decisions/index.mjs",
+    "cleanup": "node tools/cleanup/index.mjs",
+    "sweep": "node tools/sweep/index.mjs"
+  },
+  "overrides": {
+    "playwright-core": "1.63.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@cloudflare/vitest-plugin": "1.3.7",
+    "@types/node": "^24.0.0",
+    "@vitest/coverage-istanbul": "~4.1.11",
+    "concurrently": "^10.0.5",
+    "typescript": "^5.7.2",
+    "vitest": "~4.1.11"
+  }
+}

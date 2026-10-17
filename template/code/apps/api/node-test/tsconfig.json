@@ -1,0 +1,12 @@
+{
+  // The api's tests that need Node itself. The `node` project in `vitest.config.ts` runs them.
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"],
+    "emitDeclarationOnly": true,
+    "outDir": "../dist/node-test"
+  },
+  "include": ["."],
+  "references": [{ "path": ".." }]
+}

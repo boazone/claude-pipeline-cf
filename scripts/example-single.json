@@ -1,0 +1,12 @@
+{
+  "name": "solo",
+  "PREFIX": "SOL",
+  "marketing": "Solo",
+  "domain": "solo.app",
+  "root": "C:/dev/personal/solo",
+  "email": "someone@example.com",
+  "gh_owner": "someone",
+  "dev_subdomain": "solo-dev",
+  "apps": [],
+  "flags": {}
+}

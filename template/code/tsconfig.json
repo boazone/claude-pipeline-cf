@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./apps/api" },
+    { "path": "./apps/api/test" },
+    { "path": "./apps/api/node-test" },
+    { "path": "./apps/web" },
+    { "path": "./apps/web/browser" }
+  ]
+}

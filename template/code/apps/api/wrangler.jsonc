@@ -1,0 +1,122 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // One Worker per environment, each with its own D1, R2, secrets and AI Gateway — nothing is shared
+  // (`vibe/TECH-STACK.md`). Named environments inherit **none** of the bindings, vars, triggers or
+  // rate limits below; each block repeats them. A `TODO-…` id is written by `/start` once the
+  // resource exists (`vibe/dev/SETUP.md`).
+  "name": "{{name}}",
+  // The main account — production (and QA). Pins every command, whatever `wrangler login` holds.
+  "account_id": "TODO-main-account-id",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "../web/dist",
+    "binding": "ASSETS",
+    // The Worker decides what is a page and what is a typo — see src/index.ts.
+    "not_found_handling": "none"
+  },
+  "observability": { "enabled": true },
+  // The top level is what `wrangler dev` uses — local, `npm run dev` and a story server.
+  "vars": {
+    "ENVIRONMENT": "LOCAL"
+    // {{#ai}}
+    // Local calls dev's gateway with dev's keys: a laptop leak revokes dev, never production.
+    ,"AI_GATEWAY_URL": "https://gateway.ai.cloudflare.com/v1/TODO-dev-account-id/{{name}}-dev"
+    // {{/ai}}
+  },
+  // POST /api/system-log needs no sign-in, so it is limited per IP. One namespace per environment.
+  "ratelimits": [{ "name": "SYSTEM_LOG_RATE_LIMIT", "namespace_id": "1000", "simple": { "limit": 30, "period": 60 } }],
+  "d1_databases": [{ "binding": "DB", "database_name": "{{name}}-local", "database_id": "local" }],
+  // {{#r2}}
+  "r2_buckets": [{ "binding": "FILES", "bucket_name": "{{name}}-local" }],
+  // {{/r2}}
+  "env": {
+    // {{#qa}}
+    "qa": {
+      "d1_databases": [{ "binding": "DB", "database_name": "{{name}}-qa", "database_id": "TODO-qa-database-id" }],
+      // {{#r2}}
+      "r2_buckets": [{ "binding": "FILES", "bucket_name": "{{name}}-qa" }],
+      // {{/r2}}
+      "vars": {
+        "ENVIRONMENT": "QA"
+        // {{#ai}}
+        ,"AI_GATEWAY_URL": "https://gateway.ai.cloudflare.com/v1/TODO-main-account-id/{{name}}-qa"
+        // {{/ai}}
+      },
+      "ratelimits": [
+        { "name": "SYSTEM_LOG_RATE_LIMIT", "namespace_id": "1001", "simple": { "limit": 30, "period": 60 } }
+      ],
+      "routes": [{ "pattern": "qa.{{domain}}", "custom_domain": true }]
+    },
+    // {{/qa}}
+    "production": {
+      "d1_databases": [
+        { "binding": "DB", "database_name": "{{name}}-prod", "database_id": "TODO-prod-database-id" }
+      ],
+      // {{#r2}}
+      "r2_buckets": [{ "binding": "FILES", "bucket_name": "{{name}}-prod" }],
+      // {{/r2}}
+      "vars": {
+        "ENVIRONMENT": "PRODUCTION"
+        // {{#ai}}
+        ,"AI_GATEWAY_URL": "https://gateway.ai.cloudflare.com/v1/TODO-main-account-id/{{name}}-prod"
+        // {{/ai}}
+      },
+      "ratelimits": [
+        { "name": "SYSTEM_LOG_RATE_LIMIT", "namespace_id": "1002", "simple": { "limit": 30, "period": 60 } }
+      ],
+      // www is a custom domain only for its DNS record and certificate. A Redirect Rule on the zone
+      // sends it to the apex, because the assets binding answers before the Worker could.
+      "routes": [
+        { "pattern": "{{domain}}", "custom_domain": true },
+        { "pattern": "www.{{domain}}", "custom_domain": true }
+      ]
+    },
+    // Dev: a Cloudflare account of its own, so the agent's token reaches nothing above. The Worker is
+    // `{{name}}-dev` on its workers.dev address, behind Access, deployed from the laptop by
+    // `npm run deploy:dev -w @{{name}}/api` — never by Workers Builds (`vibe/ENVIRONMENTS.md`).
+    "dev": {
+      "account_id": "TODO-dev-account-id",
+      "workers_dev": true,
+      // On for the Worker Previews (`previews` below); the deployed Worker carries the setting.
+      "preview_urls": true,
+      "d1_databases": [
+        { "binding": "DB", "database_name": "{{name}}-dev", "database_id": "TODO-dev-database-id" }
+      ],
+      // {{#r2}}
+      "r2_buckets": [{ "binding": "FILES", "bucket_name": "{{name}}-dev" }],
+      // {{/r2}}
+      "vars": {
+        "ENVIRONMENT": "DEV"
+        // {{#ai}}
+        ,"AI_GATEWAY_URL": "https://gateway.ai.cloudflare.com/v1/TODO-dev-account-id/{{name}}-dev"
+        // {{/ai}}
+      },
+      "ratelimits": [
+        { "name": "SYSTEM_LOG_RATE_LIMIT", "namespace_id": "1003", "simple": { "limit": 30, "period": 60 } }
+      ],
+      // A Worker Preview per story (`npm run preview:dev`), behind the same Access. A preview inherits
+      // nothing from the block above: each binding is named again. D1 and R2 are dev's, unless
+      // `dev.mjs` points DB at a copy for a story's migration — it rewrites the two `{{name}}-dev`
+      // D1 lines, so they stay on one line each, exactly as written.
+      "previews": {
+        "d1_databases": [
+          { "binding": "DB", "database_name": "{{name}}-dev", "database_id": "TODO-dev-database-id" }
+        ],
+        // {{#r2}}
+        "r2_buckets": [{ "binding": "FILES", "bucket_name": "{{name}}-dev" }],
+        // {{/r2}}
+        "vars": {
+          "ENVIRONMENT": "DEV"
+          // {{#ai}}
+          ,"AI_GATEWAY_URL": "https://gateway.ai.cloudflare.com/v1/TODO-dev-account-id/{{name}}-dev"
+          // {{/ai}}
+        },
+        "ratelimits": [
+          { "name": "SYSTEM_LOG_RATE_LIMIT", "namespace_id": "1003", "simple": { "limit": 30, "period": 60 } }
+        ]
+      }
+    }
+  }
+}

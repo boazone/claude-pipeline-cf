@@ -1,0 +1,4 @@
+# Every text file checks out LF on every machine. A hook is run by sh, which does not forgive a
+# carriage return in the shebang line; Biome checks the line ending, and what an agent writes is LF —
+# with `core.autocrlf` a Windows checkout would otherwise be CRLF and fail every file written.
+* text=auto eol=lf

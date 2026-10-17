@@ -1,0 +1,44 @@
+// One formatter and linter for all of `code/` (`vibe/dev/PLAN-pipeline.md` §6). `npm run lint`
+// checks, `npm run format` writes; `npm run verify` runs the check on every commit that stages `code/`.
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  // The repo root's `.gitignore` too: `dist-types/` is ignored only there.
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true, "root": ".." },
+  // drizzle-kit writes `migrations/`, and a migration is never edited (conventions §8.4).
+  // `eval/` is the evaluator's, git-ignored; `code/.gitignore` is not the root's, so it is named here.
+  "files": { "includes": ["**", "!apps/api/migrations", "!apps/web/browser/eval"] },
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 120
+  },
+  // Import sorting would reorder side-effect CSS imports, and nothing asks for it.
+  "assist": { "enabled": false },
+  "linter": {
+    "rules": {
+      // `noUncheckedIndexedAccess` (tsconfig.base.json) makes `!` the repo's idiom.
+      "style": { "noNonNullAssertion": "off" },
+      // Every promise awaited — `void` marks one left on purpose. Biome cannot see D1 or Durable
+      // Object types; `apps/api/node-test/promises.test.ts` covers those.
+      "nursery": { "noFloatingPromises": "error", "noMisusedPromises": "error" },
+      "suspicious": {
+        // `strict` types a bare `let` by what is assigned to it, and fails where it cannot.
+        "noImplicitAnyLet": "off",
+        "noFocusedTests": "error",
+        "noSkippedTests": "error",
+        // Errors, not warnings: a finding is fixed, or suppressed in place with its reason.
+        "noArrayIndexKey": "error"
+      },
+      "correctness": { "useExhaustiveDependencies": "error" },
+      "a11y": {
+        "noNoninteractiveTabindex": "error",
+        "noRedundantAlt": "error",
+        "noStaticElementInteractions": "error",
+        "noSvgWithoutTitle": "error",
+        "useAriaPropsSupportedByRole": "error",
+        "useButtonType": "error",
+        "useKeyWithClickEvents": "error",
+        "useSemanticElements": "error"
+      }
+    }
+  }
+}

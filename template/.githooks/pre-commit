@@ -1,0 +1,34 @@
+#!/bin/sh
+# Refuses a commit that carries a secret, and — when it stages code/ or .claude/hooks/ — a commit that
+# `npm run verify` finds red. Wired once per clone: `git config core.hooksPath .githooks`
+# (code/README.md, "First time on a machine"). The path is relative, so each worktree runs this file
+# from its own branch, and
+# `.claude/hooks/guard.mjs` asks before an agent edits this file.
+#
+# gitleaks comes from winget (Gitleaks.Gitleaks), not npm. This hook fails closed: no gitleaks, no
+# commit. `git commit --no-verify` walks around it, which is the ceiling of any pre-commit guard; in a
+# Claude Code session `.claude/hooks/guard.mjs` denies it.
+
+if command -v gitleaks >/dev/null 2>&1; then
+  GITLEAKS=gitleaks
+elif [ -x "$LOCALAPPDATA/Microsoft/WinGet/Packages/Gitleaks.Gitleaks_Microsoft.Winget.Source_8wekyb3d8bbwe/gitleaks.exe" ]; then
+  # A shell started before winget put gitleaks on PATH.
+  GITLEAKS="$LOCALAPPDATA/Microsoft/WinGet/Packages/Gitleaks.Gitleaks_Microsoft.Winget.Source_8wekyb3d8bbwe/gitleaks.exe"
+else
+  echo "pre-commit: gitleaks is not installed, so the commit is refused." >&2
+  echo "pre-commit: winget install Gitleaks.Gitleaks   (then open a new shell)" >&2
+  exit 1
+fi
+
+# --verbose names the file, the line and the rule; --redact keeps the value itself off the screen.
+"$GITLEAKS" git --pre-commit --staged --redact --verbose --no-banner || exit 1
+
+# Git runs a hook from the top of the worktree being committed, so this is that worktree's
+# code/. Verify reads the working tree, not the index: a file left unstaged is checked as it is on
+# disk — ponytail: no stash dance; stage what you mean to commit.
+git diff --cached --quiet -- code/ .claude/hooks/ && exit 0 # the guard's own check is a verify step
+if [ ! -d code/node_modules ]; then
+  echo "pre-commit: code/ or .claude/hooks/ is staged and code/node_modules is missing — npm install in code/ first." >&2
+  exit 1
+fi
+node code/verify.mjs || { echo "pre-commit: npm run verify is red, so the commit is refused." >&2; exit 1; }
