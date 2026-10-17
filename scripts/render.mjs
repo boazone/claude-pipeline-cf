@@ -106,8 +106,16 @@ export function render(answers, template = TEMPLATE) {
   for (const doc of ["PIPELINE", "SETUP"]) {
     let text = readFileSync(join(ROOT, "docs", `${doc}.md`), "utf8");
     for (const [from, to] of Object.entries(angle)) text = text.replaceAll(from, to);
+    // The project's copy is `/start`'s state: each step that passes is a line here, never ticked in place.
+    if (doc === "SETUP") {
+      text +=
+        "\n## Log\n\nWritten by `/start`, one line per step as its check passes, oldest first — " +
+        "`- S<k>.<i> — YYYY-MM-DD — <what the check showed>`. A step with no line is not done.\n\n";
+    }
     out.push({ path: `vibe/dev/${doc}.md`, text });
   }
+  // The answers themselves, so a later `/start` resumes here and a template upgrade can re-render.
+  out.push({ path: "vibe/dev/start.json", text: `${JSON.stringify(answers, null, 2)}\n` });
   return out;
 }
 

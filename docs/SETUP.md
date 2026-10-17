@@ -63,7 +63,7 @@ hits the wrong one. `<name>` is the technical name, `<domain>` the production do
 |---|---|---|---|
 | 1 | The domain on Cloudflare — bought there, or its nameservers moved | user | `npx wrangler whoami` lists the account; the zone is *Active* in the dashboard |
 | 2 | A payment method — R2 asks for one even on its free tier (only with R2) | user | — |
-| 3 | The account id, into `wrangler.jsonc` | agent: `npx wrangler whoami` | the id written |
+| 3 | The account id, into `wrangler.jsonc`'s top-level `account_id` (and the gateway URLs) | agent: `npx wrangler whoami` | the id written |
 | 4 | D1 `<name>-prod` (and `<name>-qa`) | agent: `npx wrangler d1 create <name>-prod` — the guard asks | the `database_id` written into its block |
 | 5 | R2 `<name>-prod` (and `<name>-qa`) — with R2 | agent: `npx wrangler r2 bucket create <name>-prod` | `wrangler r2 bucket list` |
 | 6 | AI Gateway `<name>-prod` (and `<name>-qa`) — with AI Gateway | user, in the dashboard: authenticated, a token with *AI Gateway Run* only | the gateway URL written into `vars` |
@@ -81,13 +81,13 @@ Access permission, so the agent cannot lower the wall in front of dev.
 |---|---|---|---|
 | 1 | A new Cloudflare account, its workers.dev subdomain chosen | user | the subdomain, written as `dev_subdomain` |
 | 2 | An **account** API token: Workers Scripts Edit, D1 Edit, Workers R2 Storage Edit, Workers Tail Read, Account Settings Read | user, in *Manage Account → Account API Tokens* | — |
-| 3 | `code/apps/api/.dev-account.env` in the root checkout, git-ignored: `CLOUDFLARE_API_TOKEN=` | user pastes it | agent: `npm run wrangler:dev -w @<name>/api -- whoami` names the dev account |
+| 3 | `code/apps/api/.dev-account.env` in the root checkout, git-ignored: `CLOUDFLARE_API_TOKEN=` | user pastes it | agent: `npm run wrangler:dev -w @<name>/api -- whoami` names the dev account; its id into `env.dev.account_id` (and dev's gateway URL) |
 | 4 | D1 and R2 `<name>-dev` | agent: `npm run wrangler:dev -w @<name>/api -- d1 create <name>-dev` | the id written into `env.dev` and `env.dev.previews` |
-| 5 | The first `deploy:dev` — makes the Worker `<name>-dev` on workers.dev, previews on | agent | `https://<name>-dev.<dev_subdomain>.workers.dev/api/health` answers |
+| 5 | The first deploy — the build, dev's migrations, then the Worker `<name>-dev` on workers.dev, previews on. Plain `wrangler deploy` this once: `deploy:dev` checks Access, which cannot exist before the Worker | agent: `npm run build -w @<name>/web`, then `npm run wrangler:dev -w @<name>/api -- d1 migrations apply <name>-dev --remote`, then `npm run wrangler:dev -w @<name>/api -- deploy` | `https://<name>-dev.<dev_subdomain>.workers.dev/api/health` answers 200 — open, until 7 |
 | 6 | Zero Trust on the free plan, a team name `<name>-dev-team` | user | — |
 | 7 | Access on the Worker — its **Access** tab, on all traffic, previews included. Policy one: the user's email by one-time code. Policy two: *Service Auth*, a service token | user | — |
 | 8 | The service token's id and secret into `.dev-account.env`: `CF_ACCESS_CLIENT_ID=`, `CF_ACCESS_CLIENT_SECRET=` | user | — |
-| 9 | `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` into `env.dev.vars` and `env.dev.previews.vars` — the AUD is the `kid` in the login redirect's URL. Re-adding Access makes a new AUD | agent reads it from the redirect, writes it | `deploy:dev` again: 302 without Access, 200 with the service token |
+| 9 | The Access team domain and the application's AUD — the AUD is the `kid` in the login redirect's URL — into `vibe/RESOURCES.md` §1. The first dev-only route checks Access's JWT against them; re-adding Access makes a new AUD | agent reads them from the redirect | `npm run deploy:dev -w @<name>/api`: 302 without Access, 200 with the service token |
 | 10 | Dev's secrets, the same names as production, their own values | user: `npm run wrangler:dev -w @<name>/api -- secret put <NAME>`; for previews `-- preview base-config secret put <NAME>` | names listed |
 
 ## S5 — Local

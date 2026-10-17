@@ -19,10 +19,23 @@ const fail = (failures) => {
   process.exit(1);
 };
 
+// The project's first commit, before `main` is on any remote, has nothing to protect: `/start` makes
+// it, then pushes. Once `origin` has a `main`, a missing local ref is a fetch away, and fails.
+const remoteMain = () => {
+  try {
+    return git("ls-remote", "--heads", "origin", "main") !== "";
+  } catch {
+    return false;
+  }
+};
 let base;
 try {
   base = git("merge-base", "HEAD", "origin/main");
 } catch {
+  if (!remoteMain()) {
+    console.log("test protection: no main on origin yet — the first push, nothing to protect");
+    process.exit(0);
+  }
   fail(["no commit shared with origin/main — fetch it (`git fetch origin main`) and run again"]);
 }
 const failures = [];

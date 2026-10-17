@@ -44,7 +44,15 @@ test("render: one file per app, an empty file skipped, the docs copied", () => {
   writeFileSync(join(dir, "r2.md"), "{{#r2}}\nonly with R2\n{{/r2}}\n");
   const out = render(answers, dir);
   const paths = out.map((file) => file.path).sort();
-  assert.deepEqual(paths, ["specs/SPEC-admin.md", "specs/SPEC-store.md", "vibe/dev/PIPELINE.md", "vibe/dev/SETUP.md"]);
+  assert.deepEqual(paths, [
+    "specs/SPEC-admin.md",
+    "specs/SPEC-store.md",
+    "vibe/dev/PIPELINE.md",
+    "vibe/dev/SETUP.md",
+    "vibe/dev/start.json",
+  ]);
+  assert.match(out.find((f) => f.path === "vibe/dev/SETUP.md").text, /\n## Log\n/);
+  assert.equal(JSON.parse(out.find((f) => f.path === "vibe/dev/start.json").text).PREFIX, "SHP");
   assert.equal(out.find((f) => f.path === "specs/SPEC-store.md").text, "# Store for Shoply\n");
   assert.match(out.find((f) => f.path === "vibe/dev/SETUP.md").text, /shop-dev\.shop-dev\.workers\.dev/);
 });
