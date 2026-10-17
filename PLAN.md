@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | being shaped with the user, 2026-10-17. Nothing below is built yet. |
+| **Status** | shaped with the user 2026-10-17; built 2026-10-18 — every step of *Build order* landed. *Verified* below says what has run. |
 | **Source** | what FND (`github.com/boazone/fnd`) learned: its `/pipeline`, `/open`, `/run`, `/ship` skills, `vibe/dev/PLAN-pipeline.md`, `vibe/dev/PLAN-environments.md`, `vibe/ENVIRONMENTS.md`, `tasks/README.md`, the hooks and `code/apps/api/dev.mjs` |
 
 ## What this repository is
@@ -114,6 +114,17 @@ Done means a hello page answers on local, dev and production (and QA when chosen
    phases.
 4. `/start` — the interview, the prerequisite check, the scaffold, the setup steps, the report.
 5. A dry run: `/start` into a scratch folder, the hello page on local and dev.
+
+## Verified
+
+1. **Run, 2026-10-18:** both example answers rendered (several apps with every toggle; one app with
+   none); `npm install`, `npm run format`, then the project's own pre-commit hook — gitleaks clean,
+   `verify` green; a story server answering the hello page, the three browser checks passing on it,
+   `POST /api/system-log` taking a line; `wrangler deploy --dry-run` binding the right database and
+   environment for production, QA and dev (now a test in the template).
+2. **Not run yet:** every step that needs a real account — the GitHub repository, the main and dev
+   Cloudflare accounts, Access, Workers Builds, the first deploys, local's TLS at `local.<domain>`,
+   the routines. The first real `/start` is their test; a defect it finds is fixed in `template/`.
 
 ## Open
 
