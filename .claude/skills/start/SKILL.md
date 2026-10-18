@@ -101,7 +101,9 @@ there, or its nameservers moved — the zone *Active* before §6 needs it, not b
    the global (`git config user.name`, `user.email` — the GitHub account's), and
    `git config core.hooksPath .githooks`.
 3. In `<root>/code`: `npm install`, then `npm run format` — the render's line lengths depend on the
-   answers, and Biome settles them once.
+   answers, and Biome settles them once. Then `npx -y npm@10 ci --dry-run`: Workers Builds installs
+   with npm 10, whose `npm ci` refuses a lock that a newer local npm accepts (a peer range out of
+   step) — red is a bug in `template/`'s versions.
 4. **The first commit** — `git add -A` and `git commit -m "<PREFIX> — the scaffold, from claude-pipeline-cf"`.
    The pre-commit hook runs gitleaks and `verify`; green is the proof the render is sound. Red is a
    bug in `template/`: say so, fix it here, re-render into an empty folder — never patch the
