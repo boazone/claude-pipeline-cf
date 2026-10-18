@@ -69,7 +69,7 @@ hits the wrong one. `<name>` is the technical name, `<domain>` the production do
 | 6 | AI Gateway `<name>-prod` (and `<name>-qa`) — with AI Gateway | user, in the dashboard: authenticated, a token with *AI Gateway Run* only | the gateway URL written into `vars` |
 | 7 | The first deploy, once, from the laptop — it creates the Workers and their custom domains. **The only laptop deploy ever made to production**; recorded as such | agent: `npx wrangler deploy -c apps/api/wrangler.jsonc --env production` from `code/` — the guard asks | `https://<domain>/api/health` answers 200 |
 | 8 | Workers Builds on each Worker: root directory `code`, build `npm ci && npm run build`, deploy `npx wrangler deploy -c apps/api/wrangler.jsonc --env production` (`--env qa`), production branch `env/prod` (`env/qa`), **non-production branch builds off** | user, in the dashboard | an empty commit pushed to `env/prod` deploys |
-| 9 | `www.<domain>` → apex: a custom domain on the Worker for the record and certificate, then a Redirect Rule on the zone | user | `curl -sI https://www.<domain>` → 301 to the apex |
+| 9 | `www.<domain>` → apex, when the domain is a zone's apex: a custom domain on the Worker for the record and certificate, then a Redirect Rule on the zone | user | `curl -sI https://www.<domain>` → 301 to the apex |
 | 10 | Secrets per environment — a session secret, the model keys, the OAuth pair, as the toggles need | user: `npx wrangler secret put <NAME> --env production` — the value from stdin, never on a command line | agent: `wrangler secret list --env production` shows the names |
 
 ## S4 — Cloudflare, the dev account

@@ -61,4 +61,6 @@ test("answers are checked", () => {
   assert.throws(() => context({ ...answers, name: "Shop" }), /name/);
   assert.throws(() => context({ ...answers, email: "" }), /email/);
   assert.equal(context({ ...answers, apps: [] }).flags.multiapp, false);
+  assert.equal(context({ ...answers, domain: "a.app" }).flags.www, true);
+  assert.equal(context({ ...answers, domain: "a.b.app" }).flags.www, false);
 });

@@ -69,8 +69,10 @@
       // www is a custom domain only for its DNS record and certificate. A Redirect Rule on the zone
       // sends it to the apex, because the assets binding answers before the Worker could.
       "routes": [
-        { "pattern": "{{domain}}", "custom_domain": true },
-        { "pattern": "www.{{domain}}", "custom_domain": true }
+        { "pattern": "{{domain}}", "custom_domain": true }
+        // {{#www}}
+        ,{ "pattern": "www.{{domain}}", "custom_domain": true }
+        // {{/www}}
       ]
     },
     // Dev: a Cloudflare account of its own, so the agent's token reaches nothing above. The Worker is

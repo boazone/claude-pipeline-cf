@@ -141,7 +141,7 @@ command that changes production what it does**, and run it only on the user's wo
    `env/prod` (`env/qa`); **non-production branch builds off**. Check: an empty commit pushed to
    `env/prod` (`git commit --allow-empty`, on a throwaway branch off `origin/env/prod`, pushed with
    `git push origin HEAD:env/prod`, on the user's word) shows a successful check run.
-6. **`www`** — a Blocker table: a Redirect Rule on the zone, `www.<domain>/*` → `https://<domain>/$1`,
+6. **`www`**, when the domain is a zone's apex (not a subdomain such as `app.example.com`) — a Blocker table: a Redirect Rule on the zone, `www.<domain>/*` → `https://<domain>/$1`,
    301. Check: `curl -sI https://www.<domain>` → 301 to the apex.
 7. **Secrets**, for what the toggles turned on — a Blocker table with each `npx wrangler secret put
    <NAME> --env production` (the value typed into its prompt); check with `secret list`.

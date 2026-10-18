@@ -191,7 +191,7 @@ npx wrangler d1 time-travel restore {{name}}-prod -c apps/api/wrangler.jsonc --e
 {{NAME}}_BASE_URL=https://{{domain}} npx playwright test -c apps/web/browser public.spec
 ```
 
-and `www.{{domain}}` redirects to the apex. **A failure rolls back** — `env/prod` to the previous
+{{#www}}and `www.{{domain}}` redirects to the apex. {{/www}}**A failure rolls back** — `env/prod` to the previous
 version, the guard asking; Workers Builds deploys it like any ship:
 
 ```bash

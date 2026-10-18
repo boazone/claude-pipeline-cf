@@ -15,14 +15,16 @@ const wrangler = resolve(createRequire(import.meta.url).resolve("wrangler/packag
 /**
  * Every environment of `wrangler.jsonc` builds and binds what it must — a `wrangler deploy --dry-run`
  * each, so a config that would fail at the deploy fails here, at the commit. A named environment
- * inherits no binding, so each one is checked on its own.
+ * inherits no binding, so each one is checked on its own. The assets are an empty folder: the check
+ * needs no build, and a fresh checkout has none.
  */
 it.each(Object.keys(readConfig().env))("the %s environment builds, with its database and its name", (env) => {
   const out = mkdtempSync(join(tmpdir(), `wrangler-${env}-`));
+  const assets = mkdtempSync(join(tmpdir(), `wrangler-${env}-assets-`));
   try {
     const printed = execFileSync(
       process.execPath,
-      [wrangler, "deploy", "--dry-run", "-c", "wrangler.jsonc", "--env", env, "--outdir", out],
+      [wrangler, "deploy", "--dry-run", "-c", "wrangler.jsonc", "--env", env, "--outdir", out, "--assets", assets],
       { cwd: api, encoding: "utf8", env: { ...process.env, WRANGLER_SEND_METRICS: "false" } },
     );
     const name = env === "production" ? "PRODUCTION" : env.toUpperCase();
@@ -31,5 +33,6 @@ it.each(Object.keys(readConfig().env))("the %s environment builds, with its data
     expect(printed).toContain("env.SYSTEM_LOG_RATE_LIMIT");
   } finally {
     rmSync(out, { recursive: true, force: true });
+    rmSync(assets, { recursive: true, force: true });
   }
 });

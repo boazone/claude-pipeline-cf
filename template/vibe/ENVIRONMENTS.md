@@ -21,7 +21,7 @@ carried by its story index, `{{PREFIX}}-<n>`; a version carries the stories of o
 <!-- {{#qa}} -->
 | QA | `https://qa.{{domain}}` | `env/qa` | a fast-forward of `env/qa` to `main` | `{{name}}-qa` |
 <!-- {{/qa}} -->
-| Production | `https://{{domain}}` (+ `www` redirect) | `env/prod` | a fast-forward of `env/prod` to a version | `{{name}}-prod` |
+| Production | `https://{{domain}}`{{#www}} (+ `www` redirect){{/www}} | `env/prod` | a fast-forward of `env/prod` to a version | `{{name}}-prod` |
 
 **Dev is a Cloudflare account of its own.** The agent's token reaches that account and nothing in
 the main one, and carries no Access permission, so the agent cannot lower the wall in front of dev.

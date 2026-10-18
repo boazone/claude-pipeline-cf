@@ -40,7 +40,8 @@ export function context(answers) {
       app_first: apps[0],
       today: answers.today ?? new Date().toISOString().slice(0, 10),
     },
-    flags: { ...flags, multiapp: apps.length > 1 },
+    // `www.<domain>` only for a zone's apex: `yuval.therons.app` gets none.
+    flags: { ...flags, multiapp: apps.length > 1, www: answers.domain.split(".").length === 2 },
     apps,
   };
 }
