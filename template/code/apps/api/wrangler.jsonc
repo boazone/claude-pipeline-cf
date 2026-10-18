@@ -66,8 +66,10 @@
       "ratelimits": [
         { "name": "SYSTEM_LOG_RATE_LIMIT", "namespace_id": "1002", "simple": { "limit": 30, "period": 60 } }
       ],
+      // {{#www}}
       // www is a custom domain only for its DNS record and certificate. A Redirect Rule on the zone
       // sends it to the apex, because the assets binding answers before the Worker could.
+      // {{/www}}
       "routes": [
         { "pattern": "{{domain}}", "custom_domain": true }
         // {{#www}}

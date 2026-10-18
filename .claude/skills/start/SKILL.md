@@ -126,7 +126,9 @@ command that changes production what it does**, and run it only on the user's wo
 1. **The account id** — `npx wrangler whoami`; into `apps/api/wrangler.jsonc`, replacing
    `TODO-main-account-id` everywhere it stands.
 2. **D1** — `npx wrangler d1 create <name>-prod` (and `<name>-qa`); each printed `database_id`
-   replaces its `TODO-…-database-id`. **R2**, with the toggle — `npx wrangler r2 bucket create
+   replaces its `TODO-…-database-id`. Run from a terminal, `d1 create` asks *Would you like Wrangler
+   to add it on your behalf?* — the answer is **no**: it adds a top-level binding with `"remote": true`,
+   which points local dev at production's database, and reformats the file. **R2**, with the toggle — `npx wrangler r2 bucket create
    <name>-prod` (and `-qa`). **AI Gateway**, with the toggle — a Blocker table for the dashboard.
 3. Commit the ids (`<PREFIX> — the main account's ids`) and push to `main` directly — this is the
    project's setup, before any story — logged as S3.
