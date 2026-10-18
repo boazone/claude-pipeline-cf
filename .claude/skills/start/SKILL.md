@@ -163,7 +163,8 @@ command that changes production what it does**, and run it only on the user's wo
    `TODO-dev-account-id`.
 2. **D1 and R2** — `npm run wrangler:dev -w @<name>/api -- d1 create <name>-dev`; its id replaces
    `TODO-dev-database-id` in both of `env.dev`'s lines. R2 with the toggle. `npm run format`, commit, push.
-3. **The first deploy** — S4.5's three commands. Check: dev's `/api/health` answers 200.
+3. **The first deploy** — S4.5's one command; its red Access check is expected this once. Check:
+   dev's `/api/health` answers 200.
 4. **Access** — one Blocker table for S4.6–S4.8: Zero Trust on the free plan, team `<name>-dev-team`;
    on the Worker's **Access** tab, protect all traffic, previews included; a policy allowing the
    user's email by one-time code; a service token, and a *Service Auth* policy for it; its id and
