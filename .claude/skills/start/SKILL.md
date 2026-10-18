@@ -90,7 +90,9 @@ there, or its nameservers moved — the zone *Active* before §6 needs it, not b
 ## 4. Render — the project exists
 
 1. The answers as JSON in the scratchpad, in the shape of `scripts/example-answers.json` — `apps`
-   empty for one app, `flags` with `qa`, `r2`, `ai`, `google`, `routines`, `i18n` — then:
+   empty for one app, `flags` with `qa`, `r2`, `ai`, `google`, `routines`, `i18n`, and `local_ip` — the
+   first `127.0.0.N`, N ≥ 2, that no line of `C:\Windows\System32\drivers\etc\hosts` uses, because another
+   project's local server may hold the others — then:
 
    ```bash
    node scripts/render.mjs <answers.json> <root>
@@ -178,7 +180,7 @@ command that changes production what it does**, and run it only on the user's wo
 ## 8. Local — S5
 
 1. **The hosts line** — a Blocker table: Notepad as administrator, `C:\Windows\System32\drivers\etc\hosts`,
-   add `127.0.0.2  local.<domain>`. Check: `ping -n 1 local.<domain>` resolves to `127.0.0.2`.
+   add `<local_ip>  local.<domain>`. Check: `ping -n 1 local.<domain>` resolves to `<local_ip>`.
 2. **The certificate** — in `<root>/code`: `mkcert -cert-file certs/local.<domain>.pem -key-file
    certs/local.<domain>-key.pem local.<domain>`.
 3. **Local's secrets**, for the toggles — the user writes `code/apps/api/.dev.vars`, dev's values.

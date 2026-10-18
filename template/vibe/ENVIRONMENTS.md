@@ -14,7 +14,7 @@ carried by its story index, `{{PREFIX}}-<n>`; a version carries the stories of o
 
 | Environment | Domain | Branch behind it | Deployed by | Database |
 |---|---|---|---|---|
-| Local | `https://local.{{domain}}` (`127.0.0.2`, mkcert TLS) — the user's | any | `npm run dev` in `code/`, on the user's request only | `{{name}}-local`, `--local` |
+| Local | `https://local.{{domain}}` (`{{local_ip}}`, mkcert TLS) — the user's | any | `npm run dev` in `code/`, on the user's request only | `{{name}}-local`, `--local` |
 | Local, one per story — on request | `http://{{name}}-<n>.localhost:<8700 + n>` | `features/{{PREFIX}}-<n>` | `code/apps/api/wrangler.mjs dev --story <n>` — for a test that needs a server | a duplicate of local's state, in the story's worktree |
 | Dev | `https://{{name}}-dev.{{dev_subdomain}}.workers.dev`, behind Access — the user by one-time code, the agent by service token | `main` | `npm run deploy:dev -w @{{name}}/api`, from the laptop, on the dev account's token — never Workers Builds | `{{name}}-dev`, in the dev account |
 | Preview, one per story | `https://{{name}}-<n>-{{name}}-dev.{{dev_subdomain}}.workers.dev`, behind dev's Access | `features/{{PREFIX}}-<n>` | `npm run preview:dev -w @{{name}}/api -- <n>`, by `/run` R4; `-- <n> --delete` at R8 | dev's; `{{name}}-preview-<n>`, a copy with the story's migration, when it carries one |

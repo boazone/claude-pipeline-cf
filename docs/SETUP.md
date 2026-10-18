@@ -13,7 +13,7 @@ hits the wrong one. `<name>` is the technical name, `<domain>` the production do
 
 | Environment | Domain | Branch | Deployed by | Database · bucket |
 |---|---|---|---|---|
-| Local | `https://local.<domain>` (`127.0.0.2`, mkcert TLS) — the user's | any | `npm run dev` in `code/`, on the user's word | `<name>-local`, `--local` |
+| Local | `https://local.<domain>` (`<local_ip>`, mkcert TLS) — the user's | any | `npm run dev` in `code/`, on the user's word | `<name>-local`, `--local` |
 | Local, per story | `http://<name>-<n>.localhost:<8700 + n>` | `features/<P>-<n>` | `wrangler.mjs dev --story <n>` | a copy of local's state, in the worktree |
 | Dev | `https://<name>-dev.<dev_subdomain>.workers.dev`, behind Access | `main` | `npm run deploy:dev`, from the laptop, on the dev account's token | `<name>-dev` · `<name>-dev` |
 | Preview, per story | `https://<name>-<n>-<name>-dev.<dev_subdomain>.workers.dev`, behind dev's Access | `features/<P>-<n>` | `npm run preview:dev -- <n>` | dev's, or `<name>-preview-<n>` when the story carries a migration |
@@ -94,7 +94,7 @@ Access permission, so the agent cannot lower the wall in front of dev.
 
 | # | What | Who | Check |
 |---|---|---|---|
-| 1 | `127.0.0.2  local.<domain>` in `C:\Windows\System32\drivers\etc\hosts` | user, as administrator | `ping -n 1 local.<domain>` resolves to `127.0.0.2` |
+| 1 | `<local_ip>  local.<domain>` in `C:\Windows\System32\drivers\etc\hosts` — an address no other line of the file uses, so no other project's local server answers for it | user, as administrator | `ping -n 1 local.<domain>` resolves to `<local_ip>` |
 | 2 | The certificate: `mkcert -cert-file code/certs/local.<domain>.pem -key-file code/certs/local.<domain>-key.pem local.<domain>` | agent, in the root checkout | the two files exist, git-ignored |
 | 3 | `code/apps/api/.dev.vars` — local's secrets, never a production value | user | — |
 | 4 | Local's migrations, then `npm run dev` | user runs it — local is the user's | `https://local.<domain>/api/health` answers 200 |

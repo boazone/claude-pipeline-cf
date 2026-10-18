@@ -26,11 +26,15 @@ export function context(answers) {
   if (!/^[A-Z][A-Z0-9]*$/.test(answers.PREFIX)) throw new Error("PREFIX: uppercase letters and digits");
   const apps = answers.apps?.length ? answers.apps : [answers.name];
   for (const app of apps) if (!/^[a-z][a-z0-9-]*$/.test(app)) throw new Error(`app ${app}: lowercase and -`);
+  // Local's loopback address: one per project, so two local servers never share 127.0.0.N:443.
+  const local_ip = answers.local_ip ?? "127.0.0.2";
+  if (!/^127\.\d+\.\d+\.\d+$/.test(local_ip)) throw new Error("local_ip: an address in 127.0.0.0/8");
   const flags = Object.fromEntries(FLAGS.map((flag) => [flag, Boolean(answers.flags?.[flag])]));
   return {
     values: {
       ...answers,
       root: answers.root.replaceAll("\\", "/"),
+      local_ip,
       NAME: answers.name.toUpperCase().replaceAll("-", "_"),
       prefix: answers.PREFIX.toLowerCase(),
       purpose: answers.purpose ?? "",
@@ -103,6 +107,7 @@ export function render(answers, template = TEMPLATE) {
     "<dev_subdomain>": ctx.values.dev_subdomain,
     "<owner>": ctx.values.gh_owner,
     "<root>": ctx.values.root,
+    "<local_ip>": ctx.values.local_ip,
   };
   for (const doc of ["PIPELINE", "SETUP"]) {
     let text = readFileSync(join(ROOT, "docs", `${doc}.md`), "utf8");

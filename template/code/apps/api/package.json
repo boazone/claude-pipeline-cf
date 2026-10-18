@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node wrangler.mjs dev --ip 127.0.0.2 --port 443 --local-protocol https --https-cert-path ../../certs/local.{{domain}}.pem --https-key-path ../../certs/local.{{domain}}-key.pem",
+    "dev": "node wrangler.mjs dev --ip {{local_ip}} --port 443 --local-protocol https --https-cert-path ../../certs/local.{{domain}}.pem --https-key-path ../../certs/local.{{domain}}-key.pem",
     "dev:story": "node wrangler.mjs dev --story",
     "deploy:dev": "node dev.mjs deploy",
     "preview:dev": "node dev.mjs preview-story",

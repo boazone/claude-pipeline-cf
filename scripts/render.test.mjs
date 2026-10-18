@@ -63,4 +63,6 @@ test("answers are checked", () => {
   assert.equal(context({ ...answers, apps: [] }).flags.multiapp, false);
   assert.equal(context({ ...answers, domain: "a.app" }).flags.www, true);
   assert.equal(context({ ...answers, domain: "a.b.app" }).flags.www, false);
+  assert.equal(context(answers).values.local_ip, "127.0.0.2");
+  assert.throws(() => context({ ...answers, local_ip: "10.0.0.2" }), /local_ip/);
 });

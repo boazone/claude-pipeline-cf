@@ -49,7 +49,7 @@ Placeholders: `{{name}}` (technical name, `fnd`), `{{PREFIX}}` (story index, `FN
    the Worker (one-time code for the user, a service token for the agent), an account API token
    written to `.dev-account.env`. Dev is on `workers.dev`, behind Access.
 7. **Local** — node, `gh auth`, `wrangler login`, gitleaks, mkcert, the hosts line
-   `127.0.0.2 local.<domain>`, `core.hooksPath`; a story server per story at `<name>-<n>.localhost`.
+   `<local_ip> local.<domain>` (one loopback address per project), `core.hooksPath`; a story server per story at `<name>-<n>.localhost`.
 
 The flow: the interview → a prerequisite check → the scaffold and first push → the Cloudflare and
 GitHub steps, one Blocker table at a time, the agent running what `wrangler` and `gh` can and the

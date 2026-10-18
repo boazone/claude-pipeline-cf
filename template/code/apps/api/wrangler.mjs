@@ -54,7 +54,7 @@ if (story) {
 // to start while a socket listens on exactly that address. Not a connect probe: Docker Desktop
 // listens on `0.0.0.0:443`, which answers every loopback address and would block every start.
 if (command === "dev" && process.platform === "win32") {
-  const address = story ? `127.0.0.1:${8700 + story}` : "127.0.0.2:443";
+  const address = story ? `127.0.0.1:${8700 + story}` : "{{local_ip}}:443";
   const busy = new RegExp(`^\\s*TCP\\s+${address.replaceAll(".", "\\.")}\\s+\\S+\\s+LISTENING`, "m").test(
     execFileSync("netstat", ["-ano", "-p", "TCP"], { encoding: "utf8" }),
   );
@@ -62,7 +62,7 @@ if (command === "dev" && process.platform === "win32") {
     fail(
       story
         ? `Story ${story} is already served — something holds ${address}. Stop it first (preview_stop).`
-        : "local.{{domain}} is already served — another `npm run dev` holds 127.0.0.2:443. Stop it first.",
+        : "local.{{domain}} is already served — another `npm run dev` holds {{local_ip}}:443. Stop it first.",
     );
   }
 }
