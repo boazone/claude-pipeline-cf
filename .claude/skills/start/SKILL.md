@@ -138,11 +138,14 @@ command that changes production what it does**, and run it only on the user's wo
    setup), then `npx wrangler deploy -c apps/api/wrangler.jsonc --env production`. Check:
    `https://<domain>/api/health` answers 200. The same for QA with the toggle.
 5. **Workers Builds** — a Blocker table, per Worker: *Settings → Build → Connect* the GitHub
-   repository; root directory `code`; build command `npm ci && npm run build`; deploy command
+   repository (the Cloudflare GitHub app may see only some repositories: add this one at
+   github.com/settings/installations); *Advanced settings → Path* `code`; build command
+   `npm ci && npm run build`; deploy command
    `npx wrangler deploy -c apps/api/wrangler.jsonc --env production` (`--env qa`); production branch
-   `env/prod` (`env/qa`); **non-production branch builds off**. Check: an empty commit pushed to
-   `env/prod` (`git commit --allow-empty`, on a throwaway branch off `origin/env/prod`, pushed with
-   `git push origin HEAD:env/prod`, on the user's word) shows a successful check run.
+   `env/prod` (`env/qa`); **Enable Preview builds unchecked** — the non-production branch builds.
+   Check: `env/prod` fast-forwarded to `main` (`git push origin main:env/prod`, on the user's word)
+   shows a successful check run. `main`, not an empty commit on `env/prod`'s tip: that tip is the
+   first commit, whose `wrangler.jsonc` still has the `TODO-…` ids, and its build fails.
 6. **`www`**, when the domain is a zone's apex (not a subdomain such as `app.example.com`) — a Blocker table: a Redirect Rule on the zone, `www.<domain>/*` → `https://<domain>/$1`,
    301. Check: `curl -sI https://www.<domain>` → 301 to the apex.
 7. **Secrets**, for what the toggles turned on — a Blocker table with each `npx wrangler secret put
