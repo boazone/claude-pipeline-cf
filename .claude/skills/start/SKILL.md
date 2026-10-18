@@ -181,8 +181,8 @@ command that changes production what it does**, and run it only on the user's wo
 
 1. **The hosts line** — a Blocker table: Notepad as administrator, `C:\Windows\System32\drivers\etc\hosts`,
    add `<local_ip>  local.<domain>`. Check: `ping -n 1 local.<domain>` resolves to `<local_ip>`.
-2. **The certificate** — in `<root>/code`: `mkcert -cert-file certs/local.<domain>.pem -key-file
-   certs/local.<domain>-key.pem local.<domain>`.
+2. **The certificate** — in `<root>/code`: `mkdir certs` (git-ignored, so not in the render), then
+   `mkcert -cert-file certs/local.<domain>.pem -key-file certs/local.<domain>-key.pem local.<domain>`.
 3. **Local's secrets**, for the toggles — the user writes `code/apps/api/.dev.vars`, dev's values.
 4. **The local database and the first run** — local is the user's: one Blocker table, run in a
    terminal of their own, from `<root>/code`:
