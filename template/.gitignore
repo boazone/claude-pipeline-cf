@@ -16,3 +16,6 @@ code/apps/web/browser/results/
 
 # The cleanup queue: commands a session could not run, worked through daily.
 .claude/cleanup-queue.txt
+
+# Story worktrees, under the root checkout — each is its own checkout, never part of main.
+.claude/worktrees/
