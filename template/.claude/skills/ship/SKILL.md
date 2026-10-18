@@ -63,7 +63,9 @@ which carries several stories; the story index still names a change (`vibe/ENVIR
 1. **Pending** — `npx wrangler d1 migrations list <db> -c apps/api/wrangler.jsonc --env <env>
    --remote` from `code/` ({{#qa}}`{{name}}-qa`/`qa`, {{/qa}}`{{name}}-prod`/`production`). Every file pending there
    is named in a story's `R2: … Database: … answered` entry, for that exact file, unchanged since.
-   One that is not is a stop.
+   One that is not is a stop. When the login sees more than one account, wrangler's `migrations
+   list` ignores `account_id` and refuses: prefix it with `CLOUDFLARE_ACCOUNT_ID=<wrangler.jsonc's
+   top-level account_id>`.
 2. **The order** — wrangler applies every pending file at once. All additive (a table, a nullable
    column, an index) → **before** the push. Any destructive or renaming one → **after** the push, so
    the old code never reads a shape that is gone. A ship carrying both is a stop: the user splits it.
