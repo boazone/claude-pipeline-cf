@@ -132,7 +132,8 @@ command that changes production what it does**, and run it only on the user's wo
    to add it on your behalf?* — the answer is **no**: it adds a top-level binding with `"remote": true`,
    which points local dev at production's database, and reformats the file. **R2**, with the toggle — `npx wrangler r2 bucket create
    <name>-prod` (and `-qa`). **AI Gateway**, with the toggle — a Blocker table for the dashboard.
-3. Commit the ids (`<PREFIX> — the main account's ids`) and push to `main` directly — this is the
+3. `npm run format` — a real id is longer than its `TODO-…`, and Biome wraps the line (each D1
+   object stays on one line, as `dev.mjs` needs). Commit the ids (`<PREFIX> — the main account's ids`) and push to `main` directly — this is the
    project's setup, before any story — logged as S3.
 4. **The first deploy, the only one ever made to production from a laptop** — it creates the Worker
    and its custom domains: `npm run build`, `npx wrangler d1 migrations apply <name>-prod -c
@@ -161,7 +162,7 @@ command that changes production what it does**, and run it only on the user's wo
    `npm run wrangler:dev -w @<name>/api -- whoami` names the dev account; its id replaces
    `TODO-dev-account-id`.
 2. **D1 and R2** — `npm run wrangler:dev -w @<name>/api -- d1 create <name>-dev`; its id replaces
-   `TODO-dev-database-id` in both of `env.dev`'s lines. R2 with the toggle. Commit, push.
+   `TODO-dev-database-id` in both of `env.dev`'s lines. R2 with the toggle. `npm run format`, commit, push.
 3. **The first deploy** — S4.5's three commands. Check: dev's `/api/health` answers 200.
 4. **Access** — one Blocker table for S4.6–S4.8: Zero Trust on the free plan, team `<name>-dev-team`;
    on the Worker's **Access** tab, protect all traffic, previews included; a policy allowing the
