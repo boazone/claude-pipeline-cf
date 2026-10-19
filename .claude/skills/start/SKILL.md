@@ -200,8 +200,8 @@ command that changes production what it does**, and run it only on the user's wo
 
 - **Google** — a Blocker table per environment: one OAuth client each, its redirect URI, the
   consent screen in *Testing* with the user as a test user; the pair as secrets (§6.7, §7.6, §8.3).
-- **Routines** — the sweep's *D1 Read* token on the main account (an account token, Rons Apps'
-  *Manage Account → Account API Tokens*), also as `CLOUDFLARE_SWEEP_TOKEN=` in `.dev-account.env`
+- **Routines** — the sweep's *D1 Read* token on the main account (an account token, the main
+  account's *Manage Account → Account API Tokens*), also as `CLOUDFLARE_SWEEP_TOKEN=` in `.dev-account.env`
   for the laptop; check `npm run sweep`. Then **a cloud environment of the project's own** — one
   environment carries one secret per host, and another project's may already hold
   `api.cloudflare.com`: at claude.ai/code, the environment selector → **New environment**, name
