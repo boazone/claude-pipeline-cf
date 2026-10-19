@@ -200,11 +200,20 @@ command that changes production what it does**, and run it only on the user's wo
 
 - **Google** — a Blocker table per environment: one OAuth client each, its redirect URI, the
   consent screen in *Testing* with the user as a test user; the pair as secrets (§6.7, §7.6, §8.3).
-- **Routines** — the sweep's *D1 Read* token on the main account, a network secret of a Claude cloud
-  environment (the user, in the cloud environment's settings); then the two routines from
-  `<root>/tasks/ROUTINES.md` through `/schedule`, on `<owner>/<name>`, and their URLs into
-  `vibe/RESOURCES.md` §3. The cleanup queue: a local scheduled task, daily 09:00, running
-  `npm run cleanup` in `<root>/code` — through the scheduled-tasks tool.
+- **Routines** — the sweep's *D1 Read* token on the main account (an account token, Rons Apps'
+  *Manage Account → Account API Tokens*), also as `CLOUDFLARE_SWEEP_TOKEN=` in `.dev-account.env`
+  for the laptop; check `npm run sweep`. Then **a cloud environment of the project's own** — one
+  environment carries one secret per host, and another project's may already hold
+  `api.cloudflare.com`: at claude.ai/code, the environment selector → **New environment**, name
+  `<name>`, network **Limited** with `api.cloudflare.com` allowed and package managers on, and under
+  **Network secrets → Add secret**: **Bearer**, allowed website `api.cloudflare.com`, header
+  `Authorization` / `Bearer` / the token. The Claude GitHub App must see `<owner>/<name>`
+  (github.com/settings/installations) or the create is refused. Then the two routines from
+  `<root>/tasks/ROUTINES.md` through `/schedule`, in that environment, and **`clear_mcp_connections`
+  on each** — the create attaches every claude.ai connector. Fire the sweep once and read its run
+  log: its first line names rows, not `401`. Their URLs into `vibe/RESOURCES.md` §3. The cleanup
+  queue: a local scheduled task, daily 09:00, running `npm run cleanup --prefix code` from `<root>` —
+  through the scheduled-tasks tool; the user sets its folder to `<root>` in the app.
 
 ## 10. Done — S8
 
