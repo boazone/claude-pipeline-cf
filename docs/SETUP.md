@@ -32,10 +32,12 @@ hits the wrong one. `<name>` is the technical name, `<domain>` the production do
 | GitHub owner | `boazone` | the repository |
 | Local folder | `C:\dev\personal\fnd` | the root checkout, which stays on `main`. It may exist: its `.git` is kept, the render is copied in without overwriting (a collision stops it), and the user's own files move under `vibe/` where the interview agreed |
 | The user's email | | Access's one-time code; never a test account |
+| Where it starts | a folder with material — documents, a design, code — or only an idea | material: read whole, filed under `vibe/`; an idea: the discovery, written to `vibe/prd/discovery.md` for P1 |
+| Who signs in | nobody (a public site) · only a team (an admin area) · everyone | the Google sign-in toggle, and its scope; the routines' default |
 | Apps | `admin, host, game` — or one | one path per app, `/<app>/*` |
 | Several languages and directions | yes / no | `vibe/reference/i18n-and-rtl.md` and the rules |
 | QA | yes / no | `env/qa`, `/ship qa`, the QA resources |
-| Toggles | R2, Durable Objects, AI Gateway, Google sign-in, cloud routines | what is created and bound |
+| Toggles | R2, Durable Objects, AI Gateway, Google sign-in, Claude routines — each only if the app needs it | what is created and bound |
 | Dev account | new, or one another project's dev already uses | `dev_subdomain`; shared → `dev_shared_with`, that project's root, and S4 reuses what exists |
 
 ## S1 — The machine

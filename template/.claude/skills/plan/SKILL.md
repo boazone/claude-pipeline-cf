@@ -17,7 +17,10 @@ asks the next question — never one already answered.
 
 1. `vibe/TERMINOLOGY.md`, `vibe/CLAUDE.md` (*Working style*, *Talking to the user*), `vibe/prd/PRD.md`.
 2. `tasks/PHASES.md` — whole; it may not exist yet.
-3. **Where to write.** The root checkout, `{{root}}`, stays on `main`; in it, `git fetch origin` and
+3. **What `/start` left** — every other file in `vibe/prd/` (`discovery.md`, the interview word for
+   word; an offer or a pitch), and `vibe/design/` and `vibe/reference/legacy/` when they exist —
+   whole, a design export by its README and spec. They close questions before any is asked.
+4. **Where to write.** The root checkout, `{{root}}`, stays on `main`; in it, `git fetch origin` and
    `git worktree add --detach .claude/worktrees/plan origin/main`, and work there. In a worktree the
    app made: `git fetch origin && git checkout --detach origin/main`. **Every commit is
    bookkeeping on `main`**: documents only, nothing under `code/`, pushed with

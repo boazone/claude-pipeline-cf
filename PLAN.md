@@ -78,6 +78,20 @@ Done means a hello page answers on local, dev and production (and QA when chosen
    project with no PRD starts at P1; with a PRD and no SPEC, at P2. Each phase's state is the
    document's own status header, in the repository.
 
+## Decisions (the user, 2026-10-19, after the first real `/start`)
+
+7. **`/start` says the journey first** — the steps, who acts, how long — and the stack in one table:
+   the environments and what each is for, the code, GitHub, sign-in, the routines.
+8. **Two opposite starts.** A folder that already holds material (documents, a design, code) is read
+   whole and its answers proposed; an idea with nothing behind it gets a short discovery — who it is
+   for, the first thing someone does, who signs in, apps, languages — written to
+   `vibe/prd/discovery.md` for P1.
+9. **Sign-in and routines only when the app needs them.** *Who signs in* decides Google: nobody (a
+   public site) → off; a team (an admin area) → on, for that app alone; everyone → on. Routines are
+   on for an app with signed-in users, off for a public site, optional either way.
+10. **The closer is a celebration and a map**: a banner, the links by environment, what was left, and
+    the next step — a new session in the project, `/pipeline`.
+
 ## Defaults — overturn by saying so
 
 1. A generator, not a template to clone: `/start` runs here and creates `<root>` as its own

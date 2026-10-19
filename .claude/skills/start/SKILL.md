@@ -1,6 +1,6 @@
 ---
 name: start
-description: Set up a new project and its CI/CD pipeline on Cloudflare — `/start` interviews the user (name, ticket prefix, purpose, apps, languages, toggles), renders the project from `template/` into its own folder, creates its GitHub repository and branches, walks the Cloudflare main and dev accounts and the local machine one step at a time, and ends with the hello page live on local, dev and production and the next step — `/pipeline` in a new session in the project. `/start <folder>` resumes a setup from that project's `vibe/dev/SETUP.md`. Use for "start", "new project", "set up a project", "bootstrap", "scaffold".
+description: Set up a new project and its CI/CD pipeline on Cloudflare — `/start` says the journey and the stack, then interviews the user — reading a folder that already holds material, or taking a bare idea through a short discovery (who it is for, who signs in, apps, languages, the toggles the app needs), renders the project from `template/` into its own folder, creates its GitHub repository and branches, walks the Cloudflare main and dev accounts and the local machine one step at a time, and ends with the hello page live on local, dev and production and the next step — `/pipeline` in a new session in the project. `/start <folder>` resumes a setup from that project's `vibe/dev/SETUP.md`. Use for "start", "new project", "set up a project", "bootstrap", "scaffold".
 ---
 
 # start
@@ -31,34 +31,100 @@ agent checks names and answers (`wrangler whoami`, `secret list`, an HTTP status
 2. **Resume?** `/start <folder>`, or an answer naming a folder that has `vibe/dev/start.json` →
    read it and that `SETUP.md`'s `## Log`, say in one line which step is next, and go there.
 
-## 1. The interview — S0
+## 1. The welcome and the interview — S0
 
-Four questions, in order. Before the first, one line: *Four questions, then the setup — about an
-hour, most of it Cloudflare's dashboard.*
+### The welcome — said first, before any question
 
-1. **"What is the project — its name, and what it is for in a line or two?"** From the answer,
-   propose the rest yourself: the technical name (lowercase, short), the ticket prefix (2–4
-   capitals), the marketing name, a one-line purpose and a paragraph of description.
-2. **"Does it have several apps — for example an admin app and a customer app? Name them; each gets
-   its own path, `/<app>/*`, on one domain."** One app is the default: it lives at `/`.
-3. **"Does it need several languages, including a right-to-left one such as Hebrew or Arabic?"**
-   Yes → the rules land as documents (`vibe/reference/i18n-and-rtl.md`, the stack, the working
-   style), no code.
-4. **The rest, as one table to confirm** — *reply **ok**, or change a row by its number*:
+The user may not know what `/start` is about to do. The first message says it, in this shape, then
+asks the first question (*Understand the project* 1) under it:
+
+````markdown
+# Let's set up your project
+
+**What happens now** — about an hour, most of it clicking in Cloudflare's dashboard. You answer, click
+and paste secrets; I run every command and check every step before the next one.
+
+| | Step | Who | Time |
+|---|---|---|---|
+| 1 | **Understand the project** — a few questions, or I read what your folder already holds | you, me | 5–15 min |
+| 2 | **Your machine** — I check the tools; you install what is missing | me, you | 5 min |
+| 3 | **The project** — rendered into its folder, the first commit, its GitHub repository | me | 5 min |
+| 4 | **Production** — your Cloudflare account: the database, the first deploy, deploys from GitHub | you click, I run | 15 min |
+| 5 | **Dev** — a second, free Cloudflare account that is mine to deploy to, behind a login wall | you click, I run | 15 min |
+| 6 | **Local** — the app on your laptop, at its own HTTPS address | you, me | 5 min |
+| 7 | **Extras, only if the app needs them** — Google sign-in; Claude routines | you click, I run | 10 min each |
+| 8 | **Done** — every environment checked, and the next step: planning, in the new project | me | — |
+
+**What you get**
+
+| Piece | What it is for |
+|---|---|
+| **Local** — `https://local.<domain>` | You, on your laptop, any branch. Nobody else sees it. |
+| **Dev** — `<name>-dev.<subdomain>.workers.dev` | Every finished change lands here first, and each story gets its own preview. Behind Cloudflare Access: you by a code to your email, me by a token. |
+| **QA** — `qa.<domain>`, optional | A stop between dev and production, for a team that checks there. |
+| **Production** — `https://<domain>` | Your users. Deployed only by moving a branch, never from a laptop. |
+| **The code** | One Cloudflare Worker per environment: an API (Hono) and the app (React), on one domain; a D1 database (SQLite). Tests and checks run on your laptop before every commit. |
+| **GitHub** | The repository. Its branches are the deploys: `main` → dev, `env/prod` → production. |
+| **Google sign-in** — if people sign in | Users log in with their Google account. Not needed for a public site where everyone is a guest; for an admin area alone, only the admins sign in. |
+| **Claude routines** — optional | A daily bug sweep (production's errors into a list), a weekly review (security, dependencies, needless code, stale docs), and a daily cleanup on your laptop. |
+
+Free tiers only: Cloudflare Free, GitHub Free, your Claude plan.
+````
+
+`<domain>`, `<name>` and `<subdomain>` stay as written until they are known — it is a map, not the
+answers.
+
+### Understand the project
+
+**Two opposite starts, one interview.** Either the user has a folder that already holds something —
+documents, a design, notes, sometimes code — or nothing but an idea. The first question finds out
+which, and the folder decides the rest.
+
+1. **"What is the project called, and where should it live — a new folder, or one you already
+   have?"** A name alone is enough: the folder defaults to beside this repository,
+   `<parent of this folder>/<name>`, short (Windows, 260 characters). Then list the folder:
+   - **It has `vibe/dev/start.json`** → it was set up before: resume (§0.2).
+   - **It holds material** — read every document whole (a design export: its README and spec, not
+     each screen). Propose every answer the material gives — name, purpose, users, sign-in, apps,
+     languages — and ask only what it leaves open, one question at a time. Each file gets a place
+     under `vibe/` (row 11). **Code of its own** (`package.json`, `src/`, …) is one question: it
+     moves to `vibe/reference/legacy/` as reading for P1 and P2 — never run, never merged into
+     `code/` — or `/start` stops and the user picks another folder.
+   - **It is empty, or new** → the discovery below.
+2. **Discovery — for an idea, not yet a project.** One question at a time, each with a proposal the
+   user can accept as it stands; stop when the answers are enough for the table:
+   1. *"Who is it for, and what does it do for them?"*
+   2. *"Walk me through the first thing someone does with it — from opening it to the moment it is
+      useful."*
+   3. *"Who signs in?"* — **nobody** (a public site, every visitor a guest) · **only you or a team**
+      (a closed admin area) · **everyone who uses it**.
+   4. *"One app, or several on one domain — for example a public site and an admin area?"* —
+      proposed from 2 and 3; each gets its own path, `/<app>/*`; one app lives at `/`.
+   5. *"Several languages, including a right-to-left one such as Hebrew or Arabic?"* — yes → the
+      rules land as documents (`vibe/reference/i18n-and-rtl.md`, the stack, the working style), no
+      code.
+
+   Then say it back in five lines — the name, what it is for, who uses it, the first thing they do,
+   who signs in — and propose the technical name (lowercase, short), the ticket prefix (2–4
+   capitals), the marketing name, a one-line purpose and a paragraph of description. The questions
+   and the answers, word for word, go into `<root>/vibe/prd/discovery.md` with the render (§4.1):
+   P1 writes the PRD from it.
+3. **The rest, as one table to confirm** — *reply **ok**, or change a row by its number*:
 
    | # | What | Default |
    |---|---|---|
-   | 1 | Technical name · prefix · marketing name | from question 1 |
+   | 1 | Technical name · prefix · marketing name | from the name and what the interview found |
    | 2 | Production domain — bought on Cloudflare, or moved there | `<name>.app`, if the user has none |
    | 3 | GitHub owner | `gh api user -q .login` |
-   | 4 | Local folder — the root checkout; keep the path short (Windows, 260 characters) | beside this repository: `<parent of this folder>/<name>` |
+   | 4 | Local folder — the root checkout; keep the path short (Windows, 260 characters) | the one named in question 1, or beside this repository: `<parent of this folder>/<name>` |
    | 5 | The user's email — Access's one-time code goes there | `git config user.email` |
    | 6 | QA — a `qa.<domain>` between dev and production | off — dev is the check, `/ship prod` ships `main` |
    | 7 | R2 — file storage | off |
    | 8 | AI Gateway — model calls | off |
-   | 9 | Google sign-in — the OAuth clients now, the code with its first story | off |
-   | 10 | Cloud routines — a daily bug sweep and a weekly review | on |
-   | 11 | The folder's own files — only when row 4's folder exists and holds some | each file to a place under `vibe/`: a design in `vibe/design/`, an offer or a pitch in `vibe/prd/`, rules and references in `vibe/reference/` |
+   | 9 | Google sign-in — the OAuth clients now, the code with its first story | from *who signs in*: nobody → **off**, every visitor a guest; only you or a team → **on, for the admin app alone** — its first story keeps every other path open; everyone → **on** |
+   | 10 | Claude routines — a daily bug sweep, a weekly review, a daily cleanup | **on** when people sign in — production then has users whose errors deserve a daily look; **off** for a public site. Optional either way: they spend the user's Claude plan, and off renders no routine files — turning them on later is a story |
+   | 11 | The folder's own files — only when row 4's folder exists and holds some | each file to a place under `vibe/`: a design in `vibe/design/`, an offer or a pitch in `vibe/prd/`, rules and references in `vibe/reference/`, code of its own in `vibe/reference/legacy/` |
+   | 12 | Apps · languages | from the interview |
 
    The domain must not be taken by another project of the user's: `wrangler whoami` and the zone
    list say what is there. The folder and `<owner>/<name>` may exist already — list the folder
@@ -106,6 +172,8 @@ if it is not on Cloudflare yet (S3.1): bought there, or its nameservers moved �
    ```
 
    It refuses a folder that is not empty (a `.git` alone is empty to it). Read what it printed.
+   After a discovery, write `<root>/vibe/prd/discovery.md`: a title, the date, each question and
+   the user's answer word for word, and the five-line summary they confirmed — P1 starts from it.
 
    **`<root>` already holds files** — render into an empty scratch folder instead, then copy in
    without overwriting: first every rendered path that already exists in `<root>` — any → stop and
@@ -243,6 +311,10 @@ command that changes production what it does**, and run it only on the user's wo
 
 ## 9. Google sign-in and the routines — S6, S7, with the toggles
 
+Both are extras: a toggle that is off skips its part, and the log says so (`S6 — off: a public site,
+nobody signs in`). Google for an admin area alone is the same clients and secrets — the scope is the
+first story's.
+
 - **Google** — one Blocker table a step, at console.cloud.google.com as the user:
   1. **The project and the consent screen** — project picker → **New project** `<name>` → select it;
      **Google Auth Platform → Get started**: app name `<marketing>`, support email, **Audience**
@@ -280,17 +352,58 @@ command that changes production what it does**, and run it only on the user's wo
 
 ## 10. Done — S8
 
-Every check of `docs/SETUP.md` S8 run again and shown as one table, **Check** · **Expected** ·
-**Seen**. Then `## For you: <name> is set up`:
+Every check of `docs/SETUP.md` S8 run again. Log S8, commit, push — then the closer, one message in
+this shape, every value read from the project (a check that is not green says so in its row, and
+the banner says *almost*):
 
-1. **Links** — production, QA, dev, local, the repository, the decisions page.
-2. **Left undone** — every step the user skipped or a toggle deferred, and why. Each is a row of
-   `<root>/vibe/dev/CHECKLIST-production.md` when production needs it.
-3. **Next** — *open a new Claude Code session in `<root>` and run `/pipeline`: it starts at P1, the
-   PRD and the terminology.* Offer to start that session (`start_session`, `cwd` the root, the brief
-   "run /pipeline"), and do it on a yes.
+````markdown
+```
+╔══════════════════════════════════════════════════╗
+║                                                  ║
+║   ★  <MARKETING>  ·  up and running  ★           ║
+║                                                  ║
+║   local ✓    dev ✓    production ✓               ║
+║                                                  ║
+╚══════════════════════════════════════════════════╝
+```
 
-Log S8, commit, push.
+## Your environments
+
+| | Address | What it is for | How it changes |
+|---|---|---|---|
+| **Local** | https://local.<domain> | You, on your laptop | `npm run dev` in `<root>\code`, when you want it |
+| **Dev** | https://<name>-dev.<subdomain>.workers.dev | Every merged story, before production; each story's own preview | Behind Access — a code to <email>. I deploy it after each merge |
+| **QA** (with QA) | https://qa.<domain> | The stop before production | `/ship qa` |
+| **Production** | https://<domain> | Your users | `/ship prod` moves `env/prod`; Cloudflare builds and deploys it |
+
+| Also | |
+|---|---|
+| The repository | https://github.com/<owner>/<name> |
+| The decisions page | https://github.com/<owner>/<name>/blob/decisions/DECISIONS.md |
+| Routines (when on) | the bug sweep and the weekly review, by their claude.ai links |
+| Sign-in (when on) | Google, in *Testing*: only the test users you added can sign in |
+
+## Left for later
+
+Each step skipped or toggle left off, one line with why — and its row of
+`vibe/dev/CHECKLIST-production.md` when production needs it before launch.
+
+## What to do next
+
+1. **Open a new Claude Code session in `<root>`** — in the desktop app: a new session, folder
+   `<root>`; in a terminal: `cd <root>` then `claude`. This session stays in claude-pipeline-cf;
+   the project's own skills load only there.
+2. **Run `/pipeline`.** It reads where the project stands and goes on from there:
+   - **P1 — what to build**: the PRD and the terminology, from <what the interview gave: the
+     discovery notes, the offer, the design>, written with you and approved by you.
+   - **P2 — how it looks and works**: a spec per app and the design documents, approved.
+   - **Then the stories**, one at a time — `/open` writes one, `/run` builds it onto dev, where you
+     accept it; `/ship prod` takes the accepted ones live.
+3. Keep this session for a setup question; the project never needs it again.
+````
+
+Then offer that session — `start_session`, `cwd` the root, the brief "run /pipeline" — and start it
+on a yes.
 
 ## Rules
 
