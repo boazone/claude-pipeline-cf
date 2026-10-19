@@ -30,12 +30,13 @@ hits the wrong one. `<name>` is the technical name, `<domain>` the production do
 | Purpose, description | one line, one paragraph | `vibe/CLAUDE.md`, the PRD's first draft |
 | Production domain | `pobelo.app` | routes, OAuth, cookies |
 | GitHub owner | `boazone` | the repository |
-| Local folder | `C:\dev\personal\fnd` | the root checkout, which stays on `main` |
+| Local folder | `C:\dev\personal\fnd` | the root checkout, which stays on `main`. It may exist: its `.git` is kept, the render is copied in without overwriting (a collision stops it), and the user's own files move under `vibe/` where the interview agreed |
 | The user's email | | Access's one-time code; never a test account |
 | Apps | `admin, host, game` — or one | one path per app, `/<app>/*` |
 | Several languages and directions | yes / no | `vibe/reference/i18n-and-rtl.md` and the rules |
 | QA | yes / no | `env/qa`, `/ship qa`, the QA resources |
 | Toggles | R2, Durable Objects, AI Gateway, Google sign-in, cloud routines | what is created and bound |
+| Dev account | new, or one another project's dev already uses | `dev_subdomain`; shared → `dev_shared_with`, that project's root, and S4 reuses what exists |
 
 ## S1 — The machine
 
@@ -51,7 +52,7 @@ hits the wrong one. `<name>` is the technical name, `<domain>` the production do
 
 | # | What | Who | Check |
 |---|---|---|---|
-| 1 | Private repository `<owner>/<name>` | agent: `gh repo create <owner>/<name> --private` | `gh repo view` |
+| 1 | Private repository `<owner>/<name>` — or the one that exists, when it is empty (not empty: stop) | agent: `gh repo create <owner>/<name> --private`, or `git remote add origin` | `gh repo view` |
 | 2 | The scaffold committed and pushed to `main` | agent | `git ls-remote origin main` |
 | 3 | `env/prod` (and `env/qa`) at the same commit | agent: `git push origin main:env/prod` | `git ls-remote origin 'env/*'` |
 | 4 | The orphan branch `decisions` | agent: `npm run decisions` in `code/` | `git ls-remote origin decisions` |
@@ -76,6 +77,11 @@ hits the wrong one. `<name>` is the technical name, `<domain>` the production do
 
 A second, free account: the agent's. Its token reaches that account and nothing else, and carries no
 Access permission, so the agent cannot lower the wall in front of dev.
+
+An account another project's dev already uses may be named instead (S0, `dev_shared_with`): then
+1, 2, 6 and the service token exist, the user copies 3's file from that project (without its
+`CLOUDFLARE_SWEEP_TOKEN=` line), and 7 attaches the account's reusable policies on the Worker's
+**Access** tab — *Manage Worker access*, all traffic.
 
 | # | What | Who | Check |
 |---|---|---|---|

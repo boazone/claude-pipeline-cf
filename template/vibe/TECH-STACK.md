@@ -71,8 +71,15 @@ environment, and a host-only session cookie.
 cookie jar — a QA session cannot be presented to production. An environment difference is driven by
 the `ENVIRONMENT` binding, never by a hostname check in application code.
 
+<!-- {{#www}} -->
 **Certificates are automatic.** Universal SSL covers the apex and one label (`qa.{{domain}}`,
 `local.{{domain}}`); a second label would not be covered — stay flat.
+<!-- {{/www}} -->
+<!-- {{^www}} -->
+**Certificates are automatic for `{{domain}}` only.** It is itself one label under its zone, and
+Universal SSL covers the zone's apex and one label: `qa.{{domain}}` would be a second label, not
+covered. `local.{{domain}}` needs none — it has no DNS record, and its certificate is mkcert's.
+<!-- {{/www}} -->
 
 <!-- {{#google}} -->
 ## 4. Sign-in

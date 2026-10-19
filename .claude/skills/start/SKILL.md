@@ -58,9 +58,12 @@ hour, most of it Cloudflare's dashboard.*
    | 8 | AI Gateway — model calls | off |
    | 9 | Google sign-in — the OAuth clients now, the code with its first story | off |
    | 10 | Cloud routines — a daily bug sweep and a weekly review | on |
+   | 11 | The folder's own files — only when row 4's folder exists and holds some | each file to a place under `vibe/`: a design in `vibe/design/`, an offer or a pitch in `vibe/prd/`, rules and references in `vibe/reference/` |
 
    The domain must not be taken by another project of the user's: `wrangler whoami` and the zone
-   list say what is there.
+   list say what is there. The folder and `<owner>/<name>` may exist already — list the folder
+   (row 11 is its files, by name, `.git` aside) and `gh repo view <owner>/<name>`; §4 and §5 say
+   what follows.
 
 ## 2. The machine — S1
 
@@ -84,8 +87,11 @@ hold) the domain; `wrangler login` is the user's, in an interactive terminal.
 The render needs dev's workers.dev subdomain, so the second account comes before anything is
 written. One Blocker table: create a new Cloudflare account (free) with the user's email, open
 *Workers & Pages* once so it asks for a workers.dev subdomain, choose `<name>-dev` (or the nearest
-free one); *reply with the subdomain*. Then the domain, if it is not on Cloudflare yet (S3.1): bought
-there, or its nameservers moved — the zone *Active* before §6 needs it, not before the render.
+free one); *reply with the subdomain*. **Or an account that already is dev for another project** —
+the user may name it (every resource name carries `<name>`, so projects share it without
+colliding): its workers.dev subdomain is the answer, nothing is created, and the other project's
+root goes into the answers as `dev_shared_with` — §7 reads it from `start.json`. Then the domain,
+if it is not on Cloudflare yet (S3.1): bought there, or its nameservers moved — the zone *Active* before §6 needs it, not before the render.
 
 ## 4. Render — the project exists
 
@@ -98,8 +104,15 @@ there, or its nameservers moved — the zone *Active* before §6 needs it, not b
    node scripts/render.mjs <answers.json> <root>
    ```
 
-   It refuses a folder that is not empty. Read what it printed.
-2. In `<root>`: `git init -b main`, the user's identity if this repository's local one differs from
+   It refuses a folder that is not empty (a `.git` alone is empty to it). Read what it printed.
+
+   **`<root>` already holds files** — render into an empty scratch folder instead, then copy in
+   without overwriting: first every rendered path that already exists in `<root>` — any → stop and
+   name them, the user decides; none → copy the scratch folder's contents in. Then move each of the
+   user's files where row 11 agreed — a target that exists is a collision too.
+2. In `<root>`: `git init -b main` — or, with a `.git` already there, keep it: no commits
+   (`git rev-parse HEAD` fails) → `git symbolic-ref HEAD refs/heads/main`; commits → stop and ask.
+   Then the user's identity if this repository's local one differs from
    the global (`git config user.name`, `user.email` — the GitHub account's), and
    `git config core.hooksPath .githooks`.
 3. In `<root>/code`: `npm install`, then `npm run format` — the render's line lengths depend on the
@@ -115,7 +128,11 @@ there, or its nameservers moved — the zone *Active* before §6 needs it, not b
 
 ## 5. GitHub — S2
 
-1. `gh repo create <owner>/<name> --private --source <root> --remote origin --push`.
+1. `gh repo create <owner>/<name> --private --source <root> --remote origin --push` — unless it
+   exists: `gh repo view <owner>/<name> --json isEmpty,visibility`. Empty → it is `origin`
+   (`git remote add origin https://github.com/<owner>/<name>.git`, or the kept `.git`'s own `origin`
+   when it already points there), then `git push -u origin main`; say so if it is public. Not
+   empty → stop and say so.
 2. `git push origin main:env/prod` (and `main:env/qa` with QA) — the deploy branches, at the first
    commit.
 3. `npm run decisions` in `code/` — the orphan branch `decisions`.
@@ -162,7 +179,10 @@ command that changes production what it does**, and run it only on the user's wo
    permissions of S4.2, all accounts of none but this one; the user pastes it into
    `<root>/code/apps/api/.dev-account.env` as `CLOUDFLARE_API_TOKEN=<token>`. Check:
    `npm run wrangler:dev -w @<name>/api -- whoami` names the dev account; its id replaces
-   `TODO-dev-account-id`.
+   `TODO-dev-account-id`. **With `dev_shared_with`** the token exists: a Blocker table in which the
+   user copies `<dev_shared_with>\code\apps\api\.dev-account.env` to the same path in `<root>` —
+   the user, never the agent — and deletes its `CLOUDFLARE_SWEEP_TOKEN=` line, which is the other
+   project's main account. The same check.
 2. **D1 and R2** — `npm run wrangler:dev -w @<name>/api -- d1 create <name>-dev`; its id replaces
    `TODO-dev-database-id` in both of `env.dev`'s lines. R2 with the toggle. `npm run format`, commit, push.
 3. **The first deploy** — S4.5's one command; its red Access check is expected this once. Check:
@@ -171,6 +191,9 @@ command that changes production what it does**, and run it only on the user's wo
    on the Worker's **Access** tab, protect all traffic, previews included; a policy allowing the
    user's email by one-time code; a service token, and a *Service Auth* policy for it; its id and
    secret pasted into `.dev-account.env` as `CF_ACCESS_CLIENT_ID=` and `CF_ACCESS_CLIENT_SECRET=`.
+   **With `dev_shared_with`** the team, the policies and the service token exist — the copied file
+   holds its id and secret: on the Worker's **Access** tab, *Manage Worker access*, scope *All
+   traffic*, attach the account's reusable *Allow-email* and *Service-Auth* policies; nothing new.
 5. **The check** — `npm run deploy:dev -w @<name>/api`: 302 without Access, 200 with the service
    token. The team domain and the AUD (the `kid` in the login redirect's URL) into
    `vibe/RESOURCES.md` §1. Then the user opens dev in a browser and signs in by the one-time code.
