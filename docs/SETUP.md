@@ -69,8 +69,8 @@ hits the wrong one. `<name>` is the technical name, `<domain>` the production do
 | 5 | R2 `<name>-prod` (and `<name>-qa`) — with R2 | agent: `npx wrangler r2 bucket create <name>-prod` | `wrangler r2 bucket list` |
 | 6 | AI Gateway `<name>-prod` (and `<name>-qa`) — with AI Gateway | user, in the dashboard: authenticated, a token with *AI Gateway Run* only | the gateway URL written into `vars` |
 | 7 | The first deploy, once, from the laptop — it creates the Workers and their custom domains. **The only laptop deploy ever made to production**; recorded as such | agent: `npx wrangler deploy -c apps/api/wrangler.jsonc --env production` from `code/` — the guard asks | `https://<domain>/api/health` answers 200 |
-| 8 | Workers Builds on each Worker: path (root directory) `code`, build `npm ci && npm run build`, deploy `npx wrangler deploy -c apps/api/wrangler.jsonc --env production` (`--env qa`), production branch `env/prod` (`env/qa`), **non-production branch builds off** (the dashboard's *Enable Preview builds*, unchecked) | user, in the dashboard | an empty commit pushed to `env/prod` deploys |
-| 9 | `www.<domain>` → apex, when the domain is a zone's apex: a custom domain on the Worker for the record and certificate, then a Redirect Rule on the zone | user | `curl -sI https://www.<domain>` → 301 to the apex |
+| 8 | Workers Builds on each Worker: path (root directory) `code`, build `npm ci && npm run build`, deploy `npx wrangler deploy -c apps/api/wrangler.jsonc --env production` (`--env qa`), production branch `env/prod` (`env/qa`), **non-production branch builds off** (the connect form's *Enable Preview builds*, unchecked; *Builds for Preview branches* in the settings after). The *Cloudflare Workers and Pages* GitHub App must see the repository | user, in the dashboard: *Workers & Pages → the Worker → Settings → Build → Connect* | `env/prod` fast-forwarded to `main` — which has the real ids — gets a successful check run |
+| 9 | `www.<domain>` → apex, when the domain is a zone's apex: a custom domain on the Worker for the record and certificate, then a Redirect Rule on the zone — *Rules → Overview → Create rule → Redirect Rule*, wildcard `http*://www.<domain>/*` → `https://<domain>/${1}`, 301, query string kept | user | `curl -sI https://www.<domain>` → 301 to the apex |
 | 10 | Secrets per environment — a session secret, the model keys, the OAuth pair, as the toggles need | user: `npx wrangler secret put <NAME> --env production` — the value from stdin, never on a command line | agent: `wrangler secret list --env production` shows the names |
 
 ## S4 — Cloudflare, the dev account
@@ -85,14 +85,14 @@ An account another project's dev already uses may be named instead (S0, `dev_sha
 
 | # | What | Who | Check |
 |---|---|---|---|
-| 1 | A new Cloudflare account, its workers.dev subdomain chosen | user | the subdomain, written as `dev_subdomain` |
-| 2 | An **account** API token: Workers Scripts Edit, D1 Edit, Workers R2 Storage Edit, Workers Tail Read, Account Settings Read | user, in *Manage Account → Account API Tokens* | — |
+| 1 | A new Cloudflare account, its workers.dev subdomain chosen | user: the account switcher → *Create Account* (Free; the login 7 days old, at most 5 Free accounts), then *Workers & Pages* asks for the subdomain | the subdomain, written as `dev_subdomain` |
+| 2 | An **account** API token: Workers Scripts Edit, D1 Edit, Workers R2 Storage Edit, Workers Tail Read, Account Settings Read | user, in *Manage account → Account API tokens → Create Token* | — |
 | 3 | `code/apps/api/.dev-account.env` in the root checkout, git-ignored: `CLOUDFLARE_API_TOKEN=` | user pastes it | agent: `npm run wrangler:dev -w @<name>/api -- whoami` names the dev account; its id into `env.dev.account_id` (and dev's gateway URL) |
 | 4 | D1 and R2 `<name>-dev` | agent: `npm run wrangler:dev -w @<name>/api -- d1 create <name>-dev` | the id written into `env.dev` and `env.dev.previews` |
 | 5 | The first deploy — the build, dev's migrations, then the Worker `<name>-dev` on workers.dev, previews on. It ends red at its last step, the Access check: expected this once, since Access cannot exist before the Worker | agent: `npm run deploy:dev -w @<name>/api`, from a clean `main` that is `origin/main` | `https://<name>-dev.<dev_subdomain>.workers.dev/api/health` answers 200 — open, until 7 |
-| 6 | Zero Trust on the free plan, a team name `<name>-dev-team` | user | — |
-| 7 | Access on the Worker — its **Access** tab, on all traffic, previews included. Policy one: the user's email by one-time code. Policy two: *Service Auth*, a service token | user | — |
-| 8 | The service token's id and secret into `.dev-account.env`: `CF_ACCESS_CLIENT_ID=`, `CF_ACCESS_CLIENT_SECRET=` | user | — |
+| 6 | Zero Trust on the free plan, a team name `<name>-dev-team` | user: *Zero Trust*, its onboarding (it may ask for a payment method) | — |
+| 7 | A service token, then two policies — *Zero Trust → Access controls → Service credentials → Service Tokens → Create Service Token*; *Access controls → Policies → Add a policy*: *Allow*, include *Emails* = the user's; *Service Auth*, include *Service Token*. Then the Worker's **Access** tab → *Protect this Worker behind Access*: **All traffic** (workers.dev and every preview), both policies → *Apply Access*. Not the built-in *Email domain* with a public mail domain: it lets everyone at it in. Worker-level Access answers a WebSocket upgrade with 403 | user | — |
+| 8 | The service token's id and secret into `.dev-account.env`: `CF_ACCESS_CLIENT_ID=`, `CF_ACCESS_CLIENT_SECRET=` — shown once, at *Generate token* | user | — |
 | 9 | The Access team domain and the application's AUD — the AUD is the `kid` in the login redirect's URL — into `vibe/RESOURCES.md` §1. The first dev-only route checks Access's JWT against them; re-adding Access makes a new AUD | agent reads them from the redirect | `npm run deploy:dev -w @<name>/api`: 302 without Access, 200 with the service token |
 | 10 | Dev's secrets, the same names as production, their own values | user: `npm run wrangler:dev -w @<name>/api -- secret put <NAME>`; for previews `-- preview base-config secret put <NAME>` | names listed |
 
@@ -112,16 +112,23 @@ and local's certificate is mkcert's.
 
 One Google Cloud project, **one OAuth client per environment**, each with its own redirect URI
 `https://<host>/api/auth/callback/google`, the consent screen in *Testing*, the user listed under
-*Audience → test users*. Google accepts a workers.dev redirect URI. Its pair goes in as secrets
-(S3.10, S4.10, S5.3); a preview gets `none` — pick-a-user signs in there.
+*Audience → Test users*. Local may share dev's client, both hosts on it. Google accepts a workers.dev
+redirect URI. Its pair, `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, goes in as secrets (S3.10,
+S4.10, S5.3); a preview gets `none` — pick-a-user signs in there.
+
+| # | What | Where, at console.cloud.google.com |
+|---|---|---|
+| 1 | The project and the consent screen | project picker → *New project*; *Google Auth Platform → Get started*: app name, support email, *Audience* **External**, contact email → *Create* |
+| 2 | Testing, and who may sign in | *Audience*: status **Testing**; *Test users → Add users* — anyone not listed is refused, which reads like a code bug |
+| 3 | A client per environment | *Clients → Create client* → **Web application**: *Authorized JavaScript origins* `https://<host>`, *Authorized redirect URIs* `https://<host>/api/auth/callback/google` → *Create*. The secret is viewable only then; a changed URI can take minutes to hours to apply |
 
 ## S7 — The cloud routines (toggle)
 
 | # | What | Who |
 |---|---|---|
-| 1 | A read-only token on the main account, *D1 Read*, for the bug sweep — a network secret of the cloud environment, never in the repository | user |
-| 2 | *Bug sweep*, daily 03:00 UTC, and *Weekly review*, Mondays 03:00 UTC, on `<owner>/<name>`, with the prompts in `tasks/ROUTINES.md` | agent, through `/schedule`; their URLs into `vibe/RESOURCES.md` |
-| 3 | The cleanup queue — a local scheduled task, daily 09:00, `npm run cleanup` in `code/` | agent, through the scheduled-tasks tool |
+| 1 | A read-only token on the main account, *D1 Read*, for the bug sweep — `CLOUDFLARE_SWEEP_TOKEN=` in `.dev-account.env` on the laptop, and a network secret of the project's own cloud environment, never in the repository | user: *Manage account → Account API tokens → Create Token*; claude.ai/code → the environment selector → *New environment* (*Limited*, `api.cloudflare.com` allowed, package managers on) → *Network secrets → Add secret*: *Bearer*, `api.cloudflare.com`, `Authorization` · `Bearer` · the token |
+| 2 | *Bug sweep*, daily 03:00 UTC, and *Weekly review*, Mondays 03:00 UTC, on `<owner>/<name>`, in that environment, with the prompts in `tasks/ROUTINES.md` — the sweep's command carries `NODE_USE_ENV_PROXY=1`, or Node's `fetch` skips the proxy that adds the token and Cloudflare answers 401. The *Claude* GitHub App must see the repository; each routine's connectors cleared | agent, through `/schedule`; the sweep fired once, its first line names rows; their URLs into `vibe/RESOURCES.md` |
+| 3 | The cleanup queue — a local scheduled task, daily 09:00, `npm run cleanup --prefix code` from the root checkout | agent, through the scheduled-tasks tool; the user sets its folder to the root checkout |
 
 ## S8 — Done
 

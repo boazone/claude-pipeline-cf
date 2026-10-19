@@ -85,9 +85,10 @@ hold) the domain; `wrangler login` is the user's, in an interactive terminal.
 ## 3. The dev account first — S4.1
 
 The render needs dev's workers.dev subdomain, so the second account comes before anything is
-written. One Blocker table: create a new Cloudflare account (free) with the user's email, open
-*Workers & Pages* once so it asks for a workers.dev subdomain, choose `<name>-dev` (or the nearest
-free one); *reply with the subdomain*. **Or an account that already is dev for another project** —
+written. One Blocker table: the account switcher (top left, the account's name) → **Create
+Account** — a Free account, `<name> dev` (the user's login must be 7 days old; at most 5 Free
+accounts); in it, **Workers & Pages** once, which asks for a workers.dev subdomain: `<name>-dev`, or
+the nearest free one — **Account details → Subdomain** shows it later; *reply with the subdomain*. **Or an account that already is dev for another project** —
 the user may name it (every resource name carries `<name>`, so projects share it without
 colliding): its workers.dev subdomain is the answer, nothing is created, and the other project's
 root goes into the answers as `dev_shared_with` — §7 reads it from `start.json`. Then the domain,
@@ -159,24 +160,32 @@ command that changes production what it does**, and run it only on the user's wo
    apps/api/wrangler.jsonc --env production --remote` (the scaffold's `system_log`, approved by this
    setup), then `npx wrangler deploy -c apps/api/wrangler.jsonc --env production`. Check:
    `https://<domain>/api/health` answers 200. The same for QA with the toggle.
-5. **Workers Builds** — a Blocker table, per Worker: *Settings → Build → Connect* the GitHub
-   repository (the Cloudflare GitHub app may see only some repositories: add this one at
-   github.com/settings/installations); *Advanced settings → Path* `code`; build command
-   `npm ci && npm run build`; deploy command
-   `npx wrangler deploy -c apps/api/wrangler.jsonc --env production` (`--env qa`); production branch
-   `env/prod` (`env/qa`); **Enable Preview builds unchecked** — the non-production branch builds.
+5. **Workers Builds** — a Blocker table, per Worker: **Workers & Pages → `<name>-production`
+   (`<name>-qa`) → Settings → Build → Connect**; Git provider GitHub, the repository — the
+   *Cloudflare Workers and Pages* GitHub App may see only selected repositories: add this one at
+   github.com/settings/installations → *Configure* → *Repository access*; **Production branch**
+   `env/prod` (`env/qa`); **Disable builds** off; **Build command** `npm ci && npm run build`;
+   **Deploy command** `npx wrangler deploy -c apps/api/wrangler.jsonc --env production` (`--env qa`);
+   **Enable Preview builds unchecked** — the non-production branch builds (the Preview command is
+   then unused); **Advanced settings → Path** `code`. After the connect, Settings → Build shows these
+   as *Root directory* `/code/` and *Builds for Preview branches*, off.
    Check: `env/prod` fast-forwarded to `main` (`git push origin main:env/prod`, on the user's word)
    shows a successful check run. `main`, not an empty commit on `env/prod`'s tip: that tip is the
    first commit, whose `wrangler.jsonc` still has the `TODO-…` ids, and its build fails.
-6. **`www`**, when the domain is a zone's apex (not a subdomain such as `app.example.com`) — a Blocker table: a Redirect Rule on the zone, `www.<domain>/*` → `https://<domain>/$1`,
-   301. Check: `curl -sI https://www.<domain>` → 301 to the apex.
+6. **`www`**, when the domain is a zone's apex (not a subdomain such as `app.example.com`) — a
+   Blocker table: the zone → **Rules → Overview → Create rule → Redirect Rule**; rule name
+   `www to apex`; *When incoming requests match* **Wildcard pattern**: Request URL
+   `http*://www.<domain>/*`, Target URL `https://<domain>/${1}`, Status code **301**, **Preserve
+   query string** on → **Deploy**. The custom domain `www.<domain>` on the Worker gives the record
+   it needs (proxied). Check: `curl -sI https://www.<domain>` → 301 to the apex.
 7. **Secrets**, for what the toggles turned on — a Blocker table with each `npx wrangler secret put
    <NAME> --env production` (the value typed into its prompt); check with `secret list`.
 
 ## 7. Cloudflare, the dev account — S4.2 to S4.10
 
-1. **The token** — a Blocker table: *Manage Account → Account API Tokens → Create*, custom, the five
-   permissions of S4.2, all accounts of none but this one; the user pastes it into
+1. **The token** — a Blocker table, in the dev account: **Manage account → Account API tokens →
+   Create Token**, name `<name>-dev-agent`, the five permissions of S4.2 → **Continue to summary** →
+   **Create Token** (an account token reaches this account only); the user pastes it into
    `<root>/code/apps/api/.dev-account.env` as `CLOUDFLARE_API_TOKEN=<token>`. Check:
    `npm run wrangler:dev -w @<name>/api -- whoami` names the dev account; its id replaces
    `TODO-dev-account-id`. **With `dev_shared_with`** the token exists: a Blocker table in which the
@@ -187,13 +196,26 @@ command that changes production what it does**, and run it only on the user's wo
    `TODO-dev-database-id` in both of `env.dev`'s lines. R2 with the toggle. `npm run format`, commit, push.
 3. **The first deploy** — S4.5's one command; its red Access check is expected this once. Check:
    dev's `/api/health` answers 200.
-4. **Access** — one Blocker table for S4.6–S4.8: Zero Trust on the free plan, team `<name>-dev-team`;
-   on the Worker's **Access** tab, protect all traffic, previews included; a policy allowing the
-   user's email by one-time code; a service token, and a *Service Auth* policy for it; its id and
-   secret pasted into `.dev-account.env` as `CF_ACCESS_CLIENT_ID=` and `CF_ACCESS_CLIENT_SECRET=`.
-   **With `dev_shared_with`** the team, the policies and the service token exist — the copied file
-   holds its id and secret: on the Worker's **Access** tab, *Manage Worker access*, scope *All
-   traffic*, attach the account's reusable *Allow-email* and *Service-Auth* policies; nothing new.
+4. **Access** — one Blocker table for S4.6–S4.8, in the dev account, in this order:
+   1. **Zero Trust** (the dashboard's sidebar) — its onboarding, once: team name `<name>-dev-team`,
+      the **Free** plan (it may ask for a payment method all the same).
+   2. **Zero Trust → Access controls → Service credentials → Service Tokens → Create Service
+      Token**: name `<name>-agent`, duration non-expiring → **Generate token**. The Client ID and
+      the Client Secret show once: the user pastes them into `.dev-account.env` as
+      `CF_ACCESS_CLIENT_ID=` and `CF_ACCESS_CLIENT_SECRET=`.
+   3. **Zero Trust → Access controls → Policies → Add a policy**, twice: `<name>-user`, action
+      **Allow**, include **Emails** = the user's email; `<name>-agent`, action **Service Auth**,
+      include **Service Token** = `<name>-agent`. (Not the dialog's built-in **Email domain**: with
+      `gmail.com` it lets every Gmail address in.)
+   4. **Workers & Pages → `<name>-dev` → Access** tab → **Protect this Worker behind Access**
+      (*Manage Worker access*): scope **All traffic** (it covers workers.dev and every preview),
+      **Authentication policy → Add policy**: both policies → **Apply Access**.
+
+   The user signs in by a one-time PIN to the email — Access's login when no identity provider is
+   set. **With `dev_shared_with`** 1–3 exist — the copied file holds the service token: only 4,
+   attaching that account's two existing policies; nothing new. **Worker-level Access answers a
+   WebSocket upgrade with 403** (Cloudflare's documented limit): a project whose live play needs
+   WebSockets on dev meets it at that story, which decides the fix.
 5. **The check** — `npm run deploy:dev -w @<name>/api`: 302 without Access, 200 with the service
    token. The team domain and the AUD (the `kid` in the login redirect's URL) into
    `vibe/RESOURCES.md` §1. Then the user opens dev in a browser and signs in by the one-time code.
@@ -221,16 +243,34 @@ command that changes production what it does**, and run it only on the user's wo
 
 ## 9. Google sign-in and the routines — S6, S7, with the toggles
 
-- **Google** — a Blocker table per environment: one OAuth client each, its redirect URI, the
-  consent screen in *Testing* with the user as a test user; the pair as secrets (§6.7, §7.6, §8.3).
-- **Routines** — the sweep's *D1 Read* token on the main account (an account token, the main
-  account's *Manage Account → Account API Tokens*), also as `CLOUDFLARE_SWEEP_TOKEN=` in `.dev-account.env`
+- **Google** — one Blocker table a step, at console.cloud.google.com as the user:
+  1. **The project and the consent screen** — project picker → **New project** `<name>` → select it;
+     **Google Auth Platform → Get started**: app name `<marketing>`, support email, **Audience**
+     **External**, contact email → agree → **Create**.
+  2. **Testing** — **Audience**: publishing status stays **Testing**; **Test users → Add users**:
+     the user's email, then each person who will sign in (up to 100). Anyone not listed is refused,
+     and it reads like a code bug.
+  3. **A client per environment** — **Clients → Create client → Web application**, name
+     `<name>-prod` (`<name>-qa`, `<name>-dev`); **Authorized JavaScript origins** `https://<host>`;
+     **Authorized redirect URIs** `https://<host>/api/auth/callback/google` → **Create**. The secret
+     is viewable only now. Local may share dev's client (both hosts on it) — the user's choice. A
+     changed redirect URI can take minutes to hours to apply.
+  4. **The pair as secrets**, typed into each prompt — `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`:
+     `npx wrangler secret put <NAME> -c apps/api/wrangler.jsonc --env production` (§6.7), `npm run
+     wrangler:dev -w @<name>/api -- secret put <NAME>` (§7.6; previews get none), and the two lines
+     in `code/apps/api/.dev.vars` (§8.3). Check: the names in each `secret list`, and in `.dev.vars`.
+- **Routines** — the sweep's *D1 Read* token on the main account (**Manage account →
+  Account API tokens → Create Token**, name `<name>-sweep`, one permission: Account · D1 · Read; it
+  reads every database of the account, which says so), also as `CLOUDFLARE_SWEEP_TOKEN=` in `.dev-account.env`
   for the laptop; check `npm run sweep`. Then **a cloud environment of the project's own** — one
   environment carries one secret per host, and another project's may already hold
-  `api.cloudflare.com`: at claude.ai/code, the environment selector → **New environment**, name
-  `<name>`, network **Limited** with `api.cloudflare.com` allowed and package managers on, and under
-  **Network secrets → Add secret**: **Bearer**, allowed website `api.cloudflare.com`, header
-  `Authorization` / `Bearer` / the token. The Claude GitHub App must see `<owner>/<name>`
+  `api.cloudflare.com`. At claude.ai/code, the new-session screen: the first control under the
+  message box (the environment) → **New environment**, tab **Cloud**: **Name** `<name>`; **Network
+  access** **Limited**, **Allowed domains** `api.cloudflare.com`, **Allow package managers** on;
+  **Network secrets → + Add secret** — **Secret type** **Bearer**, **Allowed websites**
+  `api.cloudflare.com`, **Path prefixes** empty, **Custom headers** `Authorization` · `Bearer` · the
+  token as **Value** → add; then **Add environment**. The secret only reaches Node's `fetch` with
+  `NODE_USE_ENV_PROXY=1` on the command (`tasks/ROUTINES.md` carries it). The *Claude* GitHub App must see `<owner>/<name>`
   (github.com/settings/installations) or the create is refused. Then the two routines from
   `<root>/tasks/ROUTINES.md` through `/schedule`, in that environment, and **`clear_mcp_connections`
   on each** — the create attaches every claude.ai connector. Fire the sweep once and read its run
