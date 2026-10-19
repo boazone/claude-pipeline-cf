@@ -418,6 +418,27 @@ Each step skipped or toggle left off, one line with why — and its row of
    - **Then the stories**, one at a time — `/open` writes one, `/run` builds it onto dev, where you
      accept it; `/ship prod` takes the accepted ones live.
 3. Keep this session for a setup question; the project never needs it again.
+
+## `/pipeline`, day to day
+
+One command; it reads the repository and knows where things stand. `<PREFIX>-12` is a story's
+number, from `tasks/INDEX.md`. (The examples below in the project's own words — a flow from the
+interview, a screen from the design.)
+
+| You type | What happens |
+|---|---|
+| `/pipeline` | The next phase while one is open; later, the stories in flight and which to pick up |
+| `/pipeline users should see what an order will cost before paying` | Writes a story from the sentence — asking you only what the documents leave open — then builds it, and calls back with a link on dev |
+| `/pipeline vibe/dev/NOTE-cost.md` | The same, from a note you wrote |
+| `/pipeline --bug saving fails when the title has an apostrophe` | Reproduces it first; no bug, no story |
+| `/pipeline <PREFIX>-12` | Picks the story up exactly where its log stopped — a new session, a week later, the same |
+| `/pipeline <PREFIX>-12 accepted` | You tried it on dev and it is right: merged into `main`, deployed to dev |
+| `/pipeline <PREFIX>-12 notes the score is right but the font is too small` | Not yet: another round, with your notes |
+| `/pipeline <PREFIX>-12 drop` | Not this one |
+| `/pipeline <PREFIX>-12 ship` | Everything accepted on `main` goes to production as the next version<with QA: — through QA first> |
+
+Between a story's rounds the agent stops only for a decision card — a choice that is yours — and
+every answer you give is written into the repository, never remembered from the chat.
 ````
 
 Then offer that session — `start_session`, `cwd` the root, the brief "run /pipeline" — and start it
