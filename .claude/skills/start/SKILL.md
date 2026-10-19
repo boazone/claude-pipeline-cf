@@ -109,15 +109,22 @@ which, and the folder decides the rest.
    capitals), the marketing name, a one-line purpose and a paragraph of description. The questions
    and the answers, word for word, go into `<root>/vibe/prd/discovery.md` with the render (§4.1):
    P1 writes the PRD from it.
-3. **The rest, as one table to confirm** — *reply **ok**, or change a row by its number*:
+3. **The rest, as one table to confirm** — *reply **ok**, or change a row by its number*. First
+   read **`start.local.json`** at this repository's root when it exists (git-ignored;
+   `start.local.example.json` is its shape): the user's own answers that repeat across projects —
+   `email`, `gh_owner`, `gh_account` (the `gh` login to use when several are signed in),
+   `cf_account` (the main Cloudflare account's name), `dev_account`, `dev_subdomain`,
+   `dev_shared_with` (a project that already uses the dev account), `root_parent`. Each key it
+   holds is that row's default; a key it lacks is asked. It holds names, emails and paths, never
+   a token.
 
    | # | What | Default |
    |---|---|---|
    | 1 | Technical name · prefix · marketing name | from the name and what the interview found |
    | 2 | Production domain — bought on Cloudflare, or moved there | `<name>.app`, if the user has none |
-   | 3 | GitHub owner | `gh api user -q .login` |
-   | 4 | Local folder — the root checkout; keep the path short (Windows, 260 characters) | the one named in question 1, or beside this repository: `<parent of this folder>/<name>` |
-   | 5 | The user's email — Access's one-time code goes there | `git config user.email` |
+   | 3 | GitHub owner · the `gh` account | `gh_owner` and `gh_account` from `start.local.json`, else `gh api user -q .login` |
+   | 4 | Local folder — the root checkout; keep the path short (Windows, 260 characters) | the one named in question 1, else `<root_parent>/<name>`, else beside this repository: `<parent of this folder>/<name>` |
+   | 5 | The user's email — Access's one-time code goes there | `email` from `start.local.json`, else `git config user.email` |
    | 6 | QA — a `qa.<domain>` between dev and production | off — dev is the check, `/ship prod` ships `main` |
    | 7 | R2 — file storage | off |
    | 8 | AI Gateway — model calls | off |
@@ -130,6 +137,11 @@ which, and the folder decides the rest.
    list say what is there. The folder and `<owner>/<name>` may exist already — list the folder
    (row 11 is its files, by name, `.git` aside) and `gh repo view <owner>/<name>`; §4 and §5 say
    what follows.
+
+   After **ok**, when `start.local.json` is missing or lacks a key the table settled (rows 3–5;
+   `cf_account` from `wrangler whoami`; the dev account's name and subdomain, and
+   `dev_shared_with`, once §3 has them): one question — *write them to `start.local.json` for the
+   next project?* — and write it on a yes.
 
 ## 2. The machine — S1
 
@@ -145,8 +157,12 @@ mkcert -CAROOT
 npx -y wrangler@4 whoami
 ```
 
-Node 22 or newer. `wrangler whoami` must name the **main** account — the one that holds (or will
-hold) the domain; `wrangler login` is the user's, in an interactive terminal.
+Node 22 or newer. `wrangler whoami` must name the **main** account — `cf_account` when
+`start.local.json` names it, else the one that holds (or will hold) the domain; with several
+accounts on the login, ask which; `wrangler login` is the user's, in an interactive terminal.
+`gh auth status` must list `gh_account` when `start.local.json` names it; another account active →
+`gh auth switch --user <gh_account>`, and switch back when the setup ends if the user says the
+other is their default.
 
 ## 3. The dev account first — S4.1
 
@@ -157,7 +173,9 @@ accounts); in it, **Workers & Pages** once, which asks for a workers.dev subdoma
 the nearest free one — **Account details → Subdomain** shows it later; *reply with the subdomain*. **Or an account that already is dev for another project** —
 the user may name it (every resource name carries `<name>`, so projects share it without
 colliding): its workers.dev subdomain is the answer, nothing is created, and the other project's
-root goes into the answers as `dev_shared_with` — §7 reads it from `start.json`. Then the domain,
+root goes into the answers as `dev_shared_with` — §7 reads it from `start.json`. With
+`dev_account`, `dev_subdomain` and `dev_shared_with` in `start.local.json` this is that case, and
+the table is one line to confirm. Then the domain,
 if it is not on Cloudflare yet (S3.1): bought there, or its nameservers moved — the zone *Active* before §6 needs it, not before the render.
 
 ## 4. Render — the project exists
@@ -181,8 +199,8 @@ if it is not on Cloudflare yet (S3.1): bought there, or its nameservers moved �
    user's files where row 11 agreed — a target that exists is a collision too.
 2. In `<root>`: `git init -b main` — or, with a `.git` already there, keep it: no commits
    (`git rev-parse HEAD` fails) → `git symbolic-ref HEAD refs/heads/main`; commits → stop and ask.
-   Then the user's identity if this repository's local one differs from
-   the global (`git config user.name`, `user.email` — the GitHub account's), and
+   Then the user's identity when the GitHub account's differs from
+   the global (`git config user.name`, `user.email` — `gh_account`'s and row 5's), and
    `git config core.hooksPath .githooks`.
 3. In `<root>/code`: `npm install`, then `npm run format` — the render's line lengths depend on the
    answers, and Biome settles them once. Then `npx -y npm@10 ci --dry-run`: Workers Builds installs

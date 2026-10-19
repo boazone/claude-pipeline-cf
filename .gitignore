@@ -1,0 +1,5 @@
+# The user's own answers to /start — names, emails and paths, never a secret. Copy
+# start.local.example.json to make it.
+start.local.json
+.claude/settings.local.json
+.claude/worktrees/

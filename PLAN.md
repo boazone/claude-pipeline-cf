@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | shaped with the user 2026-10-17; built 2026-10-18 — every step of *Build order* landed. *Verified* below says what has run. |
-| **Source** | what FND (`github.com/boazone/fnd`) learned: its `/pipeline`, `/open`, `/run`, `/ship` skills, `vibe/dev/PLAN-pipeline.md`, `vibe/dev/PLAN-environments.md`, `vibe/ENVIRONMENTS.md`, `tasks/README.md`, the hooks and `code/apps/api/dev.mjs` |
+| **Source** | what FND (a private project of the author's) learned: its `/pipeline`, `/open`, `/run`, `/ship` skills, `vibe/dev/PLAN-pipeline.md`, `vibe/dev/PLAN-environments.md`, `vibe/ENVIRONMENTS.md`, `tasks/README.md`, the hooks and `code/apps/api/dev.mjs` |
 
 ## What this repository is
 
@@ -19,6 +19,7 @@ then stories.
 CLAUDE.md                   what this is; run /start
 PLAN.md                     this file
 .claude/skills/start/       the interview and the setup runner
+start.local.json            your own defaults for /start — git-ignored; start.local.example.json is its shape
 template/                   copied into the new project, placeholders filled:
                             CLAUDE.md · .githooks/ · .claude/ · vibe/ · tasks/ · code/
 docs/PIPELINE.md            FND's pipeline plan, generalized — why each step exists
@@ -119,6 +120,11 @@ Done means a hello page answers on local, dev and production (and QA when chosen
 11. P1 and P2 work as `/open` does: the documents and the user's answers close the gaps, one
    question at a time; the design phase writes documents, and wireframes are artifacts only when
    the user asks, registered in `RESOURCES.md`.
+12. **Nothing of one user in the repository.** The answers that repeat across a user's projects —
+    email, GitHub owner and account, the Cloudflare accounts' names, the dev subdomain, the parent
+    folder — live in `start.local.json`, git-ignored, which `/start` reads as its defaults and
+    offers to write; the committed files hold placeholders and `example.com`. Names, emails and
+    paths only — a token is typed by the user into the project's own `.dev-account.env`, never here.
 
 ## Build order
 

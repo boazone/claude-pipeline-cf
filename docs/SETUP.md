@@ -22,6 +22,12 @@ hits the wrong one. `<name>` is the technical name, `<domain>` the production do
 
 ## S0 — The interview (agent asks, user answers)
 
+What is the same for every project of one user — the email, the GitHub owner and account, the
+Cloudflare accounts' names, the dev subdomain, the parent folder — lives in `start.local.json` at
+this repository's root, git-ignored (`start.local.example.json` is its shape); `/start` reads it as
+the defaults and offers to write it after the first interview. It holds names, emails and paths,
+never a token.
+
 | Answer | Example | Used for |
 |---|---|---|
 | Technical name | `fnd` | identifiers, folders, packages, every resource name |
@@ -29,8 +35,8 @@ hits the wrong one. `<name>` is the technical name, `<domain>` the production do
 | Marketing name | `Pobelo` | user-facing surfaces only |
 | Purpose, description | one line, one paragraph | `vibe/CLAUDE.md`, the PRD's first draft |
 | Production domain | `pobelo.app` | routes, OAuth, cookies |
-| GitHub owner | `boazone` | the repository |
-| Local folder | `C:\dev\personal\fnd` | the root checkout, which stays on `main`. It may exist: its `.git` is kept, the render is copied in without overwriting (a collision stops it), and the user's own files move under `vibe/` where the interview agreed |
+| GitHub owner | `someone` | the repository |
+| Local folder | `C:\dev\fnd` | the root checkout, which stays on `main`. It may exist: its `.git` is kept, the render is copied in without overwriting (a collision stops it), and the user's own files move under `vibe/` where the interview agreed |
 | The user's email | | Access's one-time code; never a test account |
 | Where it starts | a folder with material — documents, a design, code — or only an idea | material: read whole, filed under `vibe/`; an idea: the discovery, written to `vibe/prd/discovery.md` for P1 |
 | Who signs in | nobody (a public site) · only a team (an admin area) · everyone | the Google sign-in toggle, and its scope; the routines' default |

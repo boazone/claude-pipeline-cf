@@ -7,6 +7,7 @@ defaults. Then:
 | You need | Read |
 |---|---|
 | to set up a new project | run `/start` — `.claude/skills/start/SKILL.md` |
+| your own defaults for `/start` — email, accounts, folder | `start.local.json`, git-ignored; copy `start.local.example.json` |
 | why the pipeline has the steps it has | `docs/PIPELINE.md` |
 | what must exist on Cloudflare, GitHub and the machine, and who creates it | `docs/SETUP.md` |
 | what the new project gets | `template/` — rendered with the answers |

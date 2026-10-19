@@ -1,0 +1,10 @@
+{
+  "email": "you@example.com",
+  "gh_owner": "you",
+  "gh_account": "you",
+  "cf_account": "Your Cloudflare account",
+  "dev_account": "Your dev",
+  "dev_subdomain": "you-dev",
+  "dev_shared_with": "C:/dev/another-project",
+  "root_parent": "C:/dev"
+}
