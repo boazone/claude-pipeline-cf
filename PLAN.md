@@ -61,9 +61,11 @@ Done means a hello page answers on local, dev and production (and QA when chosen
 
 ## Decisions (the user, 2026-10-17)
 
-1. **QA is optional.** Without it the path is `main` → dev → production: `/ship prod` ships `main`
-   as the next version, the accept on dev being the check, and the version tag is cut at the
-   production ship. `env/qa` and `/ship qa` are left out of the project.
+1. **QA is optional.** Without it the path is `main` → dev → production: `/ship prod` moves
+   production to the version dev runs, the accept on dev being the check. `env/qa` and `/ship qa`
+   are left out of the project. *Overturned in part (Baki, 2026-10-25):* the version tag was cut at
+   the production ship; it is now cut by every `deploy:dev` of `main`, and a ship cuts none
+   (`docs/PIPELINE.md` §5).
 2. **Local is part of the set** — mkcert TLS at `local.<domain>`, the hosts line, a story server per
    story.
 3. **Dev is always a separate, free Cloudflare account**, where the agent has full control. Its

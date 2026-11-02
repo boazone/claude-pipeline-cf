@@ -6,7 +6,11 @@
 // 2. Asks before a write to the gate itself — `.githooks/`, `.claude/settings.json`, `.claude/hooks/`.
 //    `core.hooksPath` is relative, so a worktree runs its own branch's `.githooks/pre-commit`.
 // 3. Asks before a command that changes production — a deploy, a migration or `d1 execute` against
-//    it, a push to `env/prod`. Reading production is not asked.
+//    it, a push to `env/prod`. Reading production is not asked. A ship's two regular steps pass,
+//    each as one command with nothing around it: production's migrations applied, every pending file
+//    approved at its story's decision card, and `env/prod` fast-forwarded to a version tag, which only
+//    `deploy:dev` from `main` cuts (`vibe/dev/PIPELINE.md` §5 *Why a regular ship asks nothing*). A
+//    restore, raw SQL, a forced push — the rollback — and every other form still ask.
 // 4. Asks before a pull request merge — on `env/prod` and `env/qa` the merge is the deploy.
 //    Every `gh` command that names a merge asks, but one: `gh pr merge <n>` alone, with plain flags,
 //    whose base GitHub (`gh pr view`) says is not an `env/` branch — the merge onto `main` of every R5.
@@ -87,6 +91,12 @@ const merges = (command, base) => {
   return !/^(?!env\/)\S/.test(base(plain[1], repo, cds.at(-1)?.[1]));
 };
 
+// The ship's two regular steps, whole commands only: no `--force`, no second command, no substitution.
+const SHIP_STEP = [
+  /^\s*(CLOUDFLARE_ACCOUNT_ID=\w+\s+)?npx wrangler d1 migrations apply {{name}}-prod -c apps\/api\/wrangler\.jsonc --env production --remote\s*$/,
+  /^\s*git push origin (["']?)v\d+\.\d+\.\d+\^\{commit\}:env\/prod\1\s*$/,
+];
+
 const GATE_FILE = /(^|[\\/])(\.githooks[\\/]|\.claude[\\/]settings\.json$|\.claude[\\/]hooks[\\/])/;
 
 /** `{ decision: "deny" | "ask", reason }` for a tool call, or `null` to let it through. */
@@ -110,6 +120,7 @@ export function judge({ command, file_path: file } = {}, base = ghBase) {
     // A refspec may be quoted — `"v0.2.0^{commit}:env/prod"` — so the target is read before `strip`.
     raw.some((part) => /\bgit\b.*\bpush\b/.test(strip(part)) && /\benv\/prod\b|--all\b|--mirror\b/.test(part)) ||
     (/\benv\/prod\b/.test(command) && plain.some((part) => /\bgh\b/.test(part)));
+  if (writes && SHIP_STEP.some((step) => step.test(command))) return null;
   if (writes) return { decision: "ask", reason: "This command changes production — the guard asks before every one." };
   return merges(command, base)
     ? { decision: "ask", reason: "A pull request merge onto `env/prod` or `env/qa` deploys — the guard asks before any merge it cannot prove is onto `main`." }

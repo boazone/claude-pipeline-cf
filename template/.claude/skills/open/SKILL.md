@@ -41,6 +41,10 @@ know it is done** — *Done when* lines a machine can check.
 
 ## 2. A bug — reproduce before anything else
 
+**Method: `superpowers:systematic-debugging`**, loaded before the first read — its phases 1 to 3 are
+how the three points below are done: the error read whole, the symptom reproduced, recent changes
+checked, the bad value traced back to where it originates. A fix is R3's; here nothing is changed.
+
 1. Read the description, then the code path it names — every caller, not the one the report
    mentions. `code/README.md` is the map.
 2. **See it on dev**, which runs `main`: a Playwright spec in `code/apps/web/browser/eval/` importing
@@ -79,6 +83,11 @@ What is left is a **product question** — what the system does, not how it is b
 R1's, and a database, architecture or security decision is R2's card. Ask them **one at a time**,
 each a `## For you: <question>` with the question only — numbered, no preamble, options only when
 they are the whole space. Before the first, one line each on what was closed and from where.
+
+**Method: `superpowers:brainstorming`** for the questions — looked before asked, each built on the
+last answer or on something found, what the agent filled in said out loud as its proposal, and the
+approaches laid out before `story.md` is written. Its design doc is `story.md`; its approval is B1 on
+the summary (§6), never a document under `docs/superpowers/`.
 
 **Do not invent scope.** A question the user cannot answer yet goes under *Open* in `story.md`, and
 the story stays `open` — written, pushed, and not run, `--run` or not, until it is answered (§6).

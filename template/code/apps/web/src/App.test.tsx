@@ -8,6 +8,12 @@ describe("the shell", () => {
     render(<App path="/" />);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("{{marketing}}");
   });
+
+  // jsdom is `localhost`, and the tests build with no `__{{NAME}}_VERSION__`: a dash, never `undefined`.
+  it("names the environment and the version, or a dash, at the foot of the screen", () => {
+    render(<App path="/" />);
+    expect(document.querySelector(".environment")?.textContent).toBe("LOCAL - -");
+  });
   // {{#multiapp}}
 
   it("names the app its path opens", () => {

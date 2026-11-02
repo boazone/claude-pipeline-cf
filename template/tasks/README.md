@@ -1,7 +1,8 @@
 # Tasks
 
 Story tracking. One folder per story, Jira-style index, no external tracker. The `{{PREFIX}}-<n>`
-carries a change; **a version names a ship** — `vX.Y.Z`, a git tag (`vibe/ENVIRONMENTS.md`).
+carries a change; **a version names a dev deploy** — `vX.Y.Z`, a git tag `deploy:dev` cuts; a ship
+moves {{#qa}}QA and {{/qa}}production to one (`vibe/ENVIRONMENTS.md`).
 
 ```
 tasks/
@@ -24,20 +25,21 @@ the PRD and the terminology, approved; **P2** `/design` — the specs and the de
 | Stage | Command | Ends at |
 | --- | --- | --- |
 | 1 | `/open <description \| file.md>` | `story.md` and `log.md` on `features/{{PREFIX}}-<n>`, its `INDEX.md` row `open`, pushed, **stops**; `/open --run` goes straight on |
-| 2 | *B1 approve* in the opening thread, or `/run {{PREFIX}}-<n>` | R1 Shape → R2 Decide → R3 Build → R4 Evaluate → R5 Merge → **R6 Call-back** on dev |
-| 3 | the user's word on dev — *accepted*, notes, or *drop* | R7 Accept, then R8 Cleanup |
+| 2 | *B1 approve* in the opening thread, or `/run {{PREFIX}}-<n>` | R1 Shape → R2 Decide → R3 Build → R4 Evaluate → R5 Merge and confirm on dev → **R6 Call-back**, the accept asked |
+| 3 | the user's word on a feature the agent signed on dev — *accepted*, notes, or *drop* | R7 Accept, then R8 Cleanup |
 <!-- {{#qa}} -->
-| 4 | `/ship qa` — every accepted story on `main`, as the next version | tagged, live and checked on `qa.{{domain}}` |
+| 4 | `/ship qa` — every accepted story on `main`, at the version dev runs | live and checked on `qa.{{domain}}` |
 | 5 | `/ship prod <version>` | that version live and checked on `{{domain}}`, or rolled back |
 <!-- {{/qa}} -->
 <!-- {{^qa}} -->
-| 4 | `/ship prod` — every accepted story on `main`, as the next version | tagged, live and checked on `{{domain}}`, or rolled back |
+| 4 | `/ship prod` — every accepted story on `main`, at the version dev runs | live and checked on `{{domain}}`, or rolled back |
 <!-- {{/qa}} -->
 
 A bug is `/open --bug <description>`: reproduced on dev first and its root cause named at
 `file:line`; not reproduced, no story. **Two stops: a decision card, and the accept.** Between R2 and
-R6 the agent works alone, gated by machines. The merge does not wait for the user — it is R5, on
-green — and the user judges the feature where it runs, on dev.
+R6 the agent works alone, gated by machines; a story with nothing flagged has one stop, the accept.
+The merge does not wait for the user — it is R5, on green — and the user judges the feature where it
+runs, on dev, after the agent has confirmed every line there.
 
 ## The branches
 
@@ -69,12 +71,13 @@ hotfix/{{PREFIX}}-<n>  ──PR──▶  env/prod  ──merge──▶  main
    4. **Ship it on the user's word**: the production bookmark, the migration when it goes before, a
       pull request onto `env/prod` merged with `gh pr merge <pr> --squash` — the guard asks, since
       **the merge is the deploy** — then the quick check on `{{domain}}`, and the rollback if it fails.
-   5. **Its version** is the patch above the one production ran, an annotated tag on `env/prod`'s
-      new tip.
+   5. **Its version** is the patch above the one production ran — `VERSION` bumped in the hotfix
+      branch before the merge, and a tag on `env/prod`'s new tip.
    6. **Back into `main`**: `git checkout -B merge-{{PREFIX}}-<n> origin/main && git merge
       origin/env/prod` — a **merge commit, never a squash**, or `env/prod` could never fast-forward
-      to the next version — then a pull request merged with `gh pr merge <pr> --merge`, and the
-      bookkeeping as `/ship prod` does it.
+      to the next version — a `VERSION` conflict keeps `main`'s — then a pull request merged with
+      `gh pr merge <pr> --merge`, the bookkeeping as `/ship prod` does it, and `deploy:dev` from
+      `origin/main`, which cuts the next version: the ship moves production to one.
 
 ## Working copies
 
@@ -82,8 +85,9 @@ hotfix/{{PREFIX}}-<n>  ──PR──▶  env/prod  ──merge──▶  main
    pulls it after the merge, and the worktree commands run there.
 2. **One story, one branch, one worktree.** Git refuses a branch checked out twice, and that refusal
    names the worktree the story is in.
-3. **No local server is part of the pipeline.** A story is evaluated on its Worker Preview;
-   `local.{{domain}}` runs only when the user asks, and a story server only for a test that needs one.
+3. **The user's local server is not part of the pipeline.** A story is evaluated on its Worker
+   Preview and confirmed on dev; before that it may run its own story server on its own state
+   (`code/README.md`). `local.{{domain}}` runs only when the user asks.
 4. **Bookkeeping never checks out `main`.** A doc-only commit is made on a throwaway branch and
    pushed straight to `main`: `git push origin HEAD:main`, fast-forward.
 5. **Cleanup, after the accept** (R8): the preview and its database copy, then the worktree, the
@@ -96,8 +100,8 @@ hotfix/{{PREFIX}}-<n>  ──PR──▶  env/prod  ──merge──▶  main
 
 1. **`open`** — `story.md` written on the branch; `plan.md` may not exist yet.
 2. **`in progress`** — `/run` has started: R1 to R5.
-3. **`dev`** — merged into `main`, deployed to dev, the user called back. Holds the next ship until
-   accepted.
+3. **`dev`** — merged into `main`, deployed to dev, every line confirmed there, the user called
+   back. Holds the next ship until accepted.
 4. **`accepted`** — the user accepted it on dev. Waiting for a ship.
 <!-- {{#qa}} -->
 5. **`qa`** — in a version on `qa.{{domain}}`.
