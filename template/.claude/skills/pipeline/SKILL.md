@@ -25,10 +25,10 @@ summary. A session that started a minute ago resumes the same way as the one tha
 | `/pipeline {{PREFIX}}-<n> drop` | `/run` R7.3 |
 | `/pipeline {{PREFIX}}-<n> reopen <reason>` | `/run` R9, on an `accepted`{{#qa}} or `qa`{{/qa}} story |
 <!-- {{#qa}} -->
-| `/pipeline {{PREFIX}}-<n> ship` | `accepted` → `/ship qa`, which ships everything on `main` as the next version; `qa` → `/ship prod <version>` — the version of its `D1: qa` entry; `dev` → it waits for the accept, say so |
+| `/pipeline {{PREFIX}}-<n> ship` | `accepted` → `/ship qa`, which moves QA to the version dev runs; `qa` → `/ship prod <version>` — the version of its `D1: qa` entry; `dev` → it waits for the accept, say so |
 <!-- {{/qa}} -->
 <!-- {{^qa}} -->
-| `/pipeline {{PREFIX}}-<n> ship` | `accepted` → `/ship prod`, which ships everything on `main` as the next version; `dev` → it waits for the accept, say so |
+| `/pipeline {{PREFIX}}-<n> ship` | `accepted` → `/ship prod`, which moves production to the version dev runs; `dev` → it waits for the accept, say so |
 <!-- {{/qa}} -->
 
 ## 0. Which phase — before the first story
@@ -81,18 +81,18 @@ In order — the first row that holds:
 | `qa` | done until production — the next is `/pipeline {{PREFIX}}-<n> ship` |
 <!-- {{/qa}} -->
 | `accepted` | the next is `/pipeline {{PREFIX}}-<n> ship` |
-| `dev` | R6 — the call-back again, from the round's R4 rows and the dev URL |
+| `dev` | R6 — the call-back again, from the round's `R5: confirmed on dev` rows and the dev URL |
 | `blocked` | re-check what the round's log names. Cleared → log `R<k>: unblocked — …`, status `in progress`, and read on from the rows below. Not cleared → its Blocker table again, wait |
 | `open` with no approval entry — or `open` or `in progress` with no `plan.md` | R1 |
 | `open` with an approval entry, or `in progress` — then, within the round: | |
-| — `R5: broken` with no `R5: dev restored` after it | `/run` R5.5.2 |
+| — `R5: broken` with no `R5: dev restored` after it | `/run` R5.6.2 |
 | — a decision whose **latest** R2 entry in the whole log is `refused`, with no `R1: plan` after it | R1 — re-plan without what the *no* ruled out |
 | — a decision `plan.md` lists (a `### <area>: <decision>` block under *Decisions*) whose latest R2 entry is not `answered`. Keys match with backticks ignored | R2 — the cards again, wait |
 | — a dev point not `done` in `plan.md` | R3, at the first such point |
 | — no `R4: green` after the last `R3:` or `R5: conflict — back to R4` entry (an `R5: conflict — R4 holds` keeps the green before it) | R4 |
 | — `R4: green`, no `R5: merged`, read from `main`'s copy | merged already: `gh pr list --head features/{{PREFIX}}-<n> --state merged --json number,mergeCommit,url --limit 1`, its `mergeCommit` an ancestor of `origin/main` → log `R5: merged`, continue at R5.4 |
 | — `R4: green`, no `R5: merged`, read from the branch | R5 — unless a merged pull request's `headRefOid` is `git rev-parse origin/features/{{PREFIX}}-<n>`: then as the row above |
-| — `R5: merged`, no `R5: on dev` | R5.4 |
+| — `R5: merged`, no `R5: on dev` | R5.4 — or R5.7 when `R5: confirmed on dev` is there |
 | anything else | show the Status table and the round's last three log headings, and ask |
 
 Then follow that skill from that step, with its §0 Load first. One line under the Status table says

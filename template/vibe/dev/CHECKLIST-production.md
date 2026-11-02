@@ -4,8 +4,9 @@
 
 **What production still needs, and nothing else.** A story that sets something up on dev and leaves
 production for later — a secret, a binding, a console setting — adds a row here the same turn.
-`/ship prod` reads this file before the release approval, and a release that carries a story with an
-open row here does not go out until the row is done. A done row is struck through, dated, and kept.
+`/ship prod` reads this file at its gate, runs each open row's *Check* itself, and a release that
+carries a story with an open row here does not go out until the row is done — a *Check* that fails
+or cannot be run from the laptop is a stop. A done row is struck through, dated, and kept.
 
 ## Open
 

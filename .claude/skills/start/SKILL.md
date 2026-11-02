@@ -428,14 +428,14 @@ interview, a screen from the design.)
 | You type | What happens |
 |---|---|
 | `/pipeline` | The next phase while one is open; later, the stories in flight and which to pick up |
-| `/pipeline users should see what an order will cost before paying` | Writes a story from the sentence — asking you only what the documents leave open — then builds it, and calls back with a link on dev |
+| `/pipeline users should see what an order will cost before paying` | Writes a story from the sentence — asking you only what the documents leave open — then builds it, merges it, confirms every line on dev itself, and asks you to accept — with a link on dev |
 | `/pipeline vibe/dev/NOTE-cost.md` | The same, from a note you wrote |
 | `/pipeline --bug saving fails when the title has an apostrophe` | Reproduces it first; no bug, no story |
 | `/pipeline <PREFIX>-12` | Picks the story up exactly where its log stopped — a new session, a week later, the same |
-| `/pipeline <PREFIX>-12 accepted` | You tried it on dev and it is right: merged into `main`, deployed to dev |
+| `/pipeline <PREFIX>-12 accepted` | The agent confirmed it on dev and you agree: accepted, waiting for the next ship |
 | `/pipeline <PREFIX>-12 notes the score is right but the font is too small` | Not yet: another round, with your notes |
 | `/pipeline <PREFIX>-12 drop` | Not this one |
-| `/pipeline <PREFIX>-12 ship` | Everything accepted on `main` goes to production as the next version<with QA: — through QA first> |
+| `/pipeline <PREFIX>-12 ship` | Everything accepted on `main` goes to production at the version dev runs, without a question<with QA: — through QA first> |
 
 Between a story's rounds the agent stops only for a decision card — a choice that is yours — and
 every answer you give is written into the repository, never remembered from the chat.

@@ -8,15 +8,21 @@ import { parseEnv } from "node:util";
 /**
  * Dev, from the laptop, on the dev account's token and nothing else (`vibe/ENVIRONMENTS.md`).
  *
- *     npm run deploy:dev -w @{{name}}/api [-- --branch]       main to dev: build, migrate, deploy, check
- *     npm run preview:dev -w @{{name}}/api -- <n> [--delete]  a story's branch on its Worker Preview
- *     npm run wrangler:dev -w @{{name}}/api -- <command>      any other wrangler command, on dev
+ *     npm run deploy:dev -w @{{name}}/api [-- --minor|--branch]  main to dev: version, build, migrate, deploy, check
+ *     npm run preview:dev -w @{{name}}/api -- <n> [--delete]     a story's branch on its Worker Preview
+ *     npm run wrangler:dev -w @{{name}}/api -- <command>         any other wrangler command, on dev
  *
  * `deploy:dev` is the one command that puts `main` on dev — `/run` R5 runs it after a merge. A
  * checkout with uncommitted changes, or whose tree is not `origin/main`'s, is refused; `--branch`
- * deploys it anyway, and dev runs it until the next `deploy:dev`. Then the bundle, every migration
+ * deploys it anyway, and dev runs it until the next `deploy:dev`. **A `main` deploy cuts the
+ * version** (`vibe/ENVIRONMENTS.md`): the next `vX.Y.Z` after the latest tag — minor with `--minor`,
+ * for a story with a requirement, else patch — written to `VERSION` at the repo root and committed
+ * on `main` before the build, so the bundle carries its number; then the bundle, every migration
  * dev has not run — `main`'s were approved before they merged — the deploy, and a check that dev
- * refuses a request without Access and answers one with the service token.
+ * refuses a request without Access and answers one with the service token; and only then the tag,
+ * pushed — so every version tag names a build dev ran, and `/ship` has a commit to move production
+ * to. A deploy with no change under `code/` since the latest version reuses it; a `--branch` deploy
+ * cuts none.
  *
  * Every wrangler call gets `--env dev`, whose `account_id` pins the dev account, and the token from
  * `.dev-account.env` — in the child's environment only, so `wrangler login` stays the user's, for
@@ -24,6 +30,8 @@ import { parseEnv } from "node:util";
  */
 export const DEV_URL = "https://{{name}}-dev.{{dev_subdomain}}.workers.dev";
 const CONFIG = join(import.meta.dirname, "wrangler.jsonc");
+/** `VERSION` at the repo root: the number the bundle shows (`apps/web/vite.config.ts`). */
+const VERSION_FILE = resolve(import.meta.dirname, "../../../VERSION");
 
 /** `wrangler.jsonc` as an object — comments and trailing commas dropped, strings kept. */
 export function readConfig(file = CONFIG) {
@@ -67,36 +75,96 @@ export function accessHeaders() {
 if (import.meta.main) {
   const args = process.argv.slice(2);
   const { CLOUDFLARE_API_TOKEN: token } = devAccount("CLOUDFLARE_API_TOKEN");
-  if (args[0] === "deploy") await deploy(args.includes("--branch"), token);
+  if (args[0] === "deploy") await deploy(args.includes("--branch"), args.includes("--minor"), token);
   else if (args[0] === "preview-story") await preview(Number(args[1]), args.includes("--delete"), token);
   else wrangler(args, token);
 }
 
-/** @param {boolean} branch @param {string} token */
-async function deploy(branch, token) {
+/** @param {boolean} branch @param {boolean} minor @param {string} token */
+async function deploy(branch, minor, token) {
   const git = (/** @type {string[]} */ ...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
-  git("fetch", "-q", "origin", "main");
-  const head = git("rev-parse", "--short", "HEAD");
+  git("fetch", "-q", "--prune", "--prune-tags", "--tags", "origin", "main");
   const dirty = git("status", "--porcelain") !== "";
-  const offMain = git("diff", "--name-only", "origin/main", "HEAD") !== "";
+  const offMain = git("rev-parse", "HEAD") !== git("rev-parse", "origin/main");
   if ((dirty || offMain) && !branch) {
     fail(
-      `deploy:dev puts main on dev, and this checkout ${dirty ? "has uncommitted changes" : `(${head}) is not origin/main`}. ` +
+      `deploy:dev puts main on dev, and this checkout ${dirty ? "has uncommitted changes" : `(${git("rev-parse", "--short", "HEAD")}) is not origin/main`}. ` +
         "Merge first — or pass --branch to deploy it anyway, until the next deploy:dev.",
     );
   }
   // Read before anything moves: a deploy that cannot be checked afterwards is not started.
   const headers = accessHeaders();
 
+  let version;
+  try {
+    version = branch ? `v${readFileSync(VERSION_FILE, "utf8").trim()}` : commitVersion(git, minor);
+  } catch (error) {
+    fail(error.message);
+  }
+  const head = git("rev-parse", "--short", "HEAD");
   execSync("npm run build -w @{{name}}/web", { cwd: resolve(import.meta.dirname, "..", ".."), stdio: "inherit" });
   wrangler(["d1", "migrations", "apply", "{{name}}-dev", "--remote"], token);
   wrangler(["deploy"], token);
 
   const bare = await checkAccess(DEV_URL, headers);
+  // The tag goes on once dev answers: every version tag names a build dev ran.
+  if (!branch) {
+    if (!git("tag", "--list", version)) git("tag", version, "HEAD");
+    git("push", "-q", "origin", version);
+  }
   console.log(
-    `dev: ${head}${dirty ? " plus uncommitted changes" : ""}${dirty || offMain ? " (not main — --branch)" : ""} is on ${DEV_URL}. ` +
+    `dev: ${version} (${head}${dirty ? " plus uncommitted changes" : ""}${dirty || offMain ? ", not main — --branch" : ""}) is on ${DEV_URL}. ` +
       `Without Access it answers ${bare}; with the service token, 200.`,
   );
+}
+
+/**
+ * The version after `latest` (`v1.2.3`, or nothing before the first): `v0.1.0` first, then minor for
+ * a story with a requirement, patch otherwise (`vibe/ENVIRONMENTS.md`). Major only on the user's word,
+ * by hand.
+ * @param {string | undefined} latest @param {boolean} minor
+ */
+export function nextVersion(latest, minor) {
+  if (!latest) return "v0.1.0";
+  const match = /^v(\d+)\.(\d+)\.(\d+)$/.exec(latest);
+  if (!match) throw new Error(`not a version: ${latest}`);
+  const [major, mid, patch] = match.slice(1).map(Number);
+  return minor ? `v${major}.${mid + 1}.0` : `v${major}.${mid}.${patch + 1}`;
+}
+
+/**
+ * The version this `main` deploy carries, written to `VERSION` and committed on `main` before the
+ * build (bookkeeping, outside `code/`, so the pre-commit hook runs gitleaks only); `deploy` tags it
+ * once dev answers. Nothing under `code/` changed since the latest version — a `tasks/` commit, or a
+ * deploy run again after a failure — reuses it; a `VERSION` already at the next number (committed by
+ * a run that failed before its tag) is not committed twice. `:/code` is the top-level pathspec:
+ * npm runs this from `code/apps/api`, where `code` matches nothing.
+ * @param {(...args: string[]) => string} git @param {boolean} minor @param {string} [versionFile]
+ */
+export function commitVersion(git, minor, versionFile = VERSION_FILE) {
+  const latest = git("tag", "--list", "v*", "--sort=-v:refname")
+    .split("\n")
+    .find((tag) => /^v\d+\.\d+\.\d+$/.test(tag));
+  const current = `v${readFileSync(versionFile, "utf8").trim()}`;
+  if (latest && current === latest && git("diff", "--name-only", latest, "HEAD", "--", ":/code") === "") return latest;
+  const version = nextVersion(latest, minor);
+  if (current === version) return version;
+  writeFileSync(versionFile, `${version.slice(1)}\n`);
+  git("add", versionFile);
+  git("commit", "-q", "-m", version);
+  try {
+    git("push", "-q", "origin", "HEAD:main");
+  } catch (error) {
+    // --keep, not --hard: the tree is clean (deploy refused a dirty one), and --keep aborts rather than wipe it if ever not.
+    git("reset", "-q", "--keep", "HEAD~1");
+    git("fetch", "-q", "origin", "main");
+    git("reset", "-q", "--keep", "origin/main");
+    throw new Error(
+      `${version} was not pushed — origin/main moved since the fetch, or the push failed (${error.stderr?.trim() || error.message}). ` +
+        "Its commit is undone and this checkout is origin/main again: run deploy:dev again.",
+    );
+  }
+  return version;
 }
 
 /**

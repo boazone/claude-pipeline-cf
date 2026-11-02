@@ -16,3 +16,11 @@ export function environmentOf(host: string): Environment {
 }
 
 export const ENVIRONMENT = environmentOf(globalThis.location?.hostname ?? "");
+
+/**
+ * The version this bundle was built from — `VERSION` at the repo root, inlined by `vite.config.ts`,
+ * shown beside the environment at the foot of every screen. A build with no define (the component
+ * tests) shows a dash, never `undefined`.
+ */
+declare const __{{NAME}}_VERSION__: string | undefined;
+export const VERSION = typeof __{{NAME}}_VERSION__ === "string" ? `v${__{{NAME}}_VERSION__}` : "-";

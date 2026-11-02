@@ -1,4 +1,4 @@
-import { readdirSync, rmSync } from "node:fs";
+import { readdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
@@ -26,9 +26,15 @@ function pruneAssets(): Plugin {
   };
 }
 
+// The version the bar shows (`src/env.ts`): `VERSION` at the repo root, which `deploy:dev` writes and
+// tags on every dev deploy (`apps/api/dev.mjs`). A committed file, so Workers Builds' production
+// build reads the same number without needing the tags in its clone.
+const VERSION = readFileSync(join(import.meta.dirname, "../../../VERSION"), "utf8").trim();
+
 // No service worker: on dev it would serve the cached app past a lapsed Access session, whose every
 // request then fails. A PWA, when the product wants one, is a story with its own decision card.
 export default defineConfig({
+  define: { __{{NAME}}_VERSION__: JSON.stringify(VERSION) },
   plugins: [react(), watch && pruneAssets()],
   build: {
     // **Do not empty `dist/` in watch mode.** `wrangler dev` serves this directory and holds files

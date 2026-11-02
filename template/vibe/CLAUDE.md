@@ -17,7 +17,8 @@ there in the same turn.
   vibe/             every document. The LLM entry point. Paths in these documents are written from here.
   tasks/            one folder per story — story.md, plan.md, log.md. tasks/INDEX.md is the register.
   code/             the npm workspace — apps/, tools/. code/README.md is its map.
-  .claude/skills/   pipeline — the one entry; plan · design · open · run · ship under it
+  .claude/skills/   pipeline — the one entry; plan · design · open · run · ship under it. The superpowers
+                    plugin (.claude/settings.json) is the method a step follows — dev/PIPELINE.md §8
 ```
 
 Code never goes in `vibe/`; documents never go in `code/`. **Nothing this project produces is stored
@@ -65,9 +66,11 @@ argument in place rather than deleting it.
 **`/pipeline` is the one command.** With no PRD approved it runs **P1** (`/plan`): the PRD and
 the terminology. With no specs and design approved it runs **P2** (`/design`). Then stories:
 
-`/pipeline <description>` opens and runs a story → R1–R6, stopping only for a decision card → *the
-user accepts it on dev* → `/pipeline <{{PREFIX}}-n> ship`. `/pipeline {{PREFIX}}-<n>` picks a story
-up where its `log.md` left it — the repo is its only state, never memory.
+`/pipeline <description>` opens and runs a story → R1–R6, stopping only for a decision card — a
+clear story with nothing flagged runs end to end: plan, build, reviews, preview, merge, dev,
+confirmed on dev → *the user accepts a feature the agent has signed on dev* →
+`/pipeline <{{PREFIX}}-n> ship`. `/pipeline {{PREFIX}}-<n>` picks a story up where its `log.md` left
+it — the repo is its only state, never memory.
 
 1. **`main` is the trunk; dev runs it.** `env/prod` (and `env/qa`) are the deploys, each moved by
    fast-forward. A story is built on `features/{{PREFIX}}-<n>` cut from `main`, in its own
@@ -78,14 +81,16 @@ up where its `log.md` left it — the repo is its only state, never memory.
 2. **`/run`**: **R1** writes `plan.md` and flags the database, architecture and data flow, and
    security; **R2** shows one decision card per flagged decision and waits — nothing flagged, no
    stop; **R3** builds behind `verify`; **R4** deploys the preview, where a fresh evaluator checks
-   every *Done when* line and three fresh reviews read the diff; **R5** merges on green and deploys
-   dev; **R6** calls the user back — a dev link and instructions per line; **R7** the user accepts,
-   sends notes, or drops; **R8** cleans up; **R9** reopens.
+   every *Done when* line and three fresh reviews read the diff; **R5** merges on green, deploys
+   dev — cutting the version — and confirms every line on dev; **R6** calls the user back — the
+   confirmation per line, a dev link and instructions per line, the accept asked; **R7** the user
+   accepts, sends notes, or drops; **R8** cleans up; **R9** reopens.
 3. **A migration's SQL is approved once, at the decision card**, shown in full, and that answer
    carries it to the preview's copy, dev{{#qa}}, QA{{/qa}} and production.
 4. A story is not `dev` without its changelog lines.
 5. **The local database and `local.{{domain}}` are the user's.** No step of the pipeline runs
-   there; `npm run dev` runs only when the user asks.
+   there; `npm run dev` runs only when the user asks. A story confirms locally on its own story
+   server and state (`../code/README.md`).
 
 ## Working style
 

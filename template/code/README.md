@@ -30,7 +30,7 @@ npm run dev                                  # https://local.{{domain}} — the 
 One process, no Vite dev server: `npm run dev` rebuilds the bundle and `wrangler dev` serves it as
 the Worker's static assets, exactly as deployed.
 
-## A server per story — for a test that needs one
+## A server per story — the story's own local check
 
 ```
 npm run build -w @{{name}}/web
@@ -39,7 +39,9 @@ npm run dev:story -w @{{name}}/api -- 17     # http://{{name}}-17.localhost:8717
 
 Plain HTTP on `127.0.0.1:<8700 + n>`; Chromium treats `*.localhost` as a secure context. Its database
 is a copy of local's, made once, in the worktree. It refuses to start with less than
-`{{NAME}}_MIN_FREE_GB` (default 3) of memory free.
+`{{NAME}}_MIN_FREE_GB` (default 3) of memory free. `/run` R3 confirms a point here, with headless
+Chrome or Playwright, before the preview — never on the user's `npm run dev` or its database. A port
+another session holds is left alone: take the next story's, never kill it.
 
 ## Dev
 
@@ -48,7 +50,9 @@ command runs on the dev account's token, read from `apps/api/.dev-account.env` i
 (git-ignored) — `wrangler login` stays the user's, for production:
 
 ```
-npm run deploy:dev -w @{{name}}/api              # main to dev: build, dev's pending migrations, deploy, the Access check
+npm run deploy:dev -w @{{name}}/api              # main to dev: the next patch version, build, dev's pending migrations, deploy, the Access check
+npm run deploy:dev -w @{{name}}/api -- --minor   # the same, a minor version — a story with a requirement
+npm run deploy:dev -w @{{name}}/api -- --branch  # this checkout instead, no version, until the next deploy:dev
 npm run preview:dev -w @{{name}}/api -- <n>      # this branch on Worker Preview {{name}}-<n>; `-- <n> --delete` removes it
 npm run wrangler:dev -w @{{name}}/api -- <args>  # any wrangler command on dev
 ```

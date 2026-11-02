@@ -55,6 +55,7 @@ never a token.
 | 3 | gitleaks | user: `winget install Gitleaks.Gitleaks` | `gitleaks version` |
 | 4 | mkcert, its CA trusted | user: `winget install FiloSottile.mkcert`, then `mkcert -install` | `mkcert -CAROOT` |
 | 5 | `wrangler login` on the **main** account | user, in an interactive terminal | `npx wrangler whoami` names the account |
+| 6 | The superpowers plugin — the methods the pipeline's steps follow (`vibe/dev/PIPELINE.md` §8) | Claude Code, from `.claude/settings.json`'s `enabledPlugins`, when the project opens; by hand: `claude plugin install superpowers@claude-plugins-official --scope project` | `/plugin` lists `superpowers` as enabled |
 
 ## S2 — GitHub
 
@@ -97,11 +98,11 @@ An account another project's dev already uses may be named instead (S0, `dev_sha
 | 2 | An **account** API token: Workers Scripts Edit, D1 Edit, Workers R2 Storage Edit, Workers Tail Read, Account Settings Read | user, in *Manage account → Account API tokens → Create Token* | — |
 | 3 | `code/apps/api/.dev-account.env` in the root checkout, git-ignored: `CLOUDFLARE_API_TOKEN=` | user pastes it | agent: `npm run wrangler:dev -w @<name>/api -- whoami` names the dev account; its id into `env.dev.account_id` (and dev's gateway URL) |
 | 4 | D1 and R2 `<name>-dev` | agent: `npm run wrangler:dev -w @<name>/api -- d1 create <name>-dev` | the id written into `env.dev` and `env.dev.previews` |
-| 5 | The first deploy — the build, dev's migrations, then the Worker `<name>-dev` on workers.dev, previews on. It ends red at its last step, the Access check: expected this once, since Access cannot exist before the Worker | agent: `npm run deploy:dev -w @<name>/api`, from a clean `main` that is `origin/main` | `https://<name>-dev.<dev_subdomain>.workers.dev/api/health` answers 200 — open, until 7 |
+| 5 | The first deploy — `VERSION` to `0.1.0`, committed on `main`; the build, dev's migrations, then the Worker `<name>-dev` on workers.dev, previews on. It ends red at its last step, the Access check: expected this once, since Access cannot exist before the Worker — so the tag `v0.1.0` waits for 9, which cuts no second number | agent: `npm run deploy:dev -w @<name>/api`, from a clean `main` that is `origin/main` | `https://<name>-dev.<dev_subdomain>.workers.dev/api/health` answers 200 — open, until 7 |
 | 6 | Zero Trust on the free plan, a team name `<name>-dev-team` | user: *Zero Trust*, its onboarding (it may ask for a payment method) | — |
 | 7 | A service token, then two policies — *Zero Trust → Access controls → Service credentials → Service Tokens → Create Service Token*; *Access controls → Policies → Add a policy*: *Allow*, include *Emails* = the user's; *Service Auth*, include *Service Token*. Then the Worker's **Access** tab → *Protect this Worker behind Access*: **All traffic** (workers.dev and every preview), both policies → *Apply Access*. Not the built-in *Email domain* with a public mail domain: it lets everyone at it in. Worker-level Access answers a WebSocket upgrade with 403 | user | — |
 | 8 | The service token's id and secret into `.dev-account.env`: `CF_ACCESS_CLIENT_ID=`, `CF_ACCESS_CLIENT_SECRET=` — shown once, at *Generate token* | user | — |
-| 9 | The Access team domain and the application's AUD — the AUD is the `kid` in the login redirect's URL — into `vibe/RESOURCES.md` §1. The first dev-only route checks Access's JWT against them; re-adding Access makes a new AUD | agent reads them from the redirect | `npm run deploy:dev -w @<name>/api`: 302 without Access, 200 with the service token |
+| 9 | The Access team domain and the application's AUD — the AUD is the `kid` in the login redirect's URL — into `vibe/RESOURCES.md` §1. The first dev-only route checks Access's JWT against them; re-adding Access makes a new AUD | agent reads them from the redirect | `npm run deploy:dev -w @<name>/api`: 302 without Access, 200 with the service token; its last line names `v0.1.0`, now tagged |
 | 10 | Dev's secrets, the same names as production, their own values | user: `npm run wrangler:dev -w @<name>/api -- secret put <NAME>`; for previews `-- preview base-config secret put <NAME>` | names listed |
 
 ## S5 — Local
